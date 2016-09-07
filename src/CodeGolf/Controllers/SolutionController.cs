@@ -83,7 +83,7 @@ namespace CodeGolf.Controllers
                 }
                 else
                 {
-                    solutionContent = "$input = " + theProblem.Input;
+                    solutionContent = theProblem.Input;
                     solutionContent += Environment.NewLine;
                 }
                 

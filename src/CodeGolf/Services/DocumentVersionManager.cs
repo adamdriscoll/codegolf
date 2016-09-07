@@ -9,7 +9,6 @@ namespace CodeGolf.Services
     public class DocumentVersionManager
     {
         private DocumentDbService _dbService;
-        private readonly Guid DocumentVersionDocumentId = new Guid("E6A4E557-22CE-4763-B294-5106A60DA5AB");
         private readonly List<IDocumentUpgradeStep> _steps;
 
         public DocumentVersionManager(DocumentDbService dbService)
@@ -22,15 +21,29 @@ namespace CodeGolf.Services
 
         public async Task Upgrade()
         {
-            var version = _dbService.GetDocument<DocumentVersion>(DocumentVersionDocumentId);
-            if (version == null)
+            DocumentVersion version;
+            try
             {
+                version =
+                    _dbService.Client.CreateDocumentQuery<DocumentVersion>(_dbService.DatabaseUri)
+                        .Where(m => m.Type == DocumentType.Version).ToList().FirstOrDefault();
+            }
+            catch
+            {
+                //This is due to an issue in production. Will remove later.
                 version = new DocumentVersion();
-                version.Version = new Version(1,0);
+                version.Version = "1.1";
                 await _dbService.CreateDocument(version);
             }
 
-            if (version.Version >= _steps.Max(m => m.Version))
+            if (version == null)
+            {
+                version = new DocumentVersion();
+                version.Version = "0.1";
+                await _dbService.CreateDocument(version);
+            }
+
+            if (Version.Parse(version.Version) >= _steps.Max(m => m.Version))
             {
                 return;
             }
@@ -38,7 +51,7 @@ namespace CodeGolf.Services
             foreach (var step in _steps)
             {
                 await step.Step(_dbService);
-                version.Version = step.Version;
+                version.Version = step.Version.ToString();
                 await _dbService.UpdateDocument(version);
             }
         }

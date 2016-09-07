@@ -81,6 +81,8 @@ namespace CodeGolf.Services
                         UriFactory.CreateDatabaseUri(databaseName),
                         new DocumentCollection { Id = collectionName },
                         new RequestOptions { OfferThroughput = 400 });
+
+                    
                 }
                 else
                 {
