@@ -1,0 +1,138 @@
+﻿
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>@ViewData["Title"]</title>
+
+    <environment names="Development">
+        <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css"/>
+        <link rel="stylesheet" href="~/css/site.css"/>
+        <link rel="stylesheet" href="~/lib/font-awesome-4.6.3/css/font-awesome.min.css">
+    </environment>
+    <environment names="Staging,Production">
+        <link rel="stylesheet" href="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.6/css/bootstrap.min.css"
+              asp-fallback-href="~/lib/bootstrap/dist/css/bootstrap.min.css"
+              asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute"/>
+        <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true"/>
+        <link rel="stylesheet" href="~/lib/font-awesome-4.6.3/css/font-awesome.min.css">
+    </environment>
+
+    <environment names="Development">
+        <script src="/lib/showdown/dist/showdown.js"></script>
+        <script src="~/lib/jquery/dist/jquery.js"></script>
+        <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
+        <script src="~/js/site.js" asp-append-version="true"></script>
+        <script src="~/node_modules/monaco-editor/min/vs/loader.js"></script>
+    </environment>
+    <environment names="Staging,Production">
+        <script src="/lib/showdown/dist/showdown.min.js"></script>
+        <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-2.2.0.min.js"
+                asp-fallback-src="~/lib/jquery/dist/jquery.min.js"
+                asp-fallback-test="window.jQuery">
+
+        
+        </script>
+        <script src="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.6/bootstrap.min.js"
+                asp-fallback-src="~/lib/bootstrap/dist/js/bootstrap.min.js"
+                asp-fallback-test="window.jQuery && window.jQuery.fn && window.jQuery.fn.modal">
+
+        
+        </script>
+        <script src="~/js/site.min.js" asp-append-version="true"></script>
+        <script src="~/node_modules/monaco-editor/min/vs/loader.js"></script>
+    </environment>
+
+    @Html.ApplicationInsightsJavaScript(TelemetryConfiguration)
+</head>
+<body>
+
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-default navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <img src="/images/Logo.png" style="height: 120px; width: 120px; padding: 10px;">
+            </div>
+            <div id="navbar" class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li class="active"><a href="~/"><i class="fa fa-flag fa-lg"></i> Holes</a></li>
+                    <li><a href="~/Problem/New"><i class="fa fa-cogs fa-lg"></i> Design a Hole</a></li>
+                    <li><a href="https://github.com/adamdriscoll/CodeGolf"><i class="fa fa-github fa-lg"></i> GitHub</a></li>
+                </ul>
+                <form class="navbar-form navbar-left" action="~/Problem/Search">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Search" name="criteria">
+                    </div>
+                    <button type="submit" class="btn btn-default">Submit</button>
+                </form>
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        @if (Model.Authenticated)
+                        {
+                            <a href="http://github.com/@Model.Identity"><i class="fa fa-github fa-lg"></i> @Model.Identity</a>
+                        }
+                        else
+                        {
+                            <form action="/signin" method="post">
+                                <input type="hidden" name="Provider" value="GitHub"/>
+                                <input type="hidden" name="ReturnUrl" value="@ViewBag.ReturnUrl"/>
+
+                                <button class="btn btn-lg btn-success" type="submit" style="padding:5px"><i class="fa fa-github fa-lg"></i> Sign in with GitHub</button>
+                            </form>
+                        }
+                    </li>
+                </ul>
+            </div><!--/.nav-collapse -->
+        </div>
+    </nav>
+
+
+
+<div class="container body-content">
+    @RenderBody()
+</div>
+
+
+
+
+<!--
+<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+        style="display: inline-block; width: 300px; height: 600px"
+        data-ad-client="ca-pub-5579528543450650"
+        data-ad-slot="6953340413"></ins>
+<script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+</script>-->
+
+
+
+@RenderSection("scripts", required: false)
+<div class="text-center">
+    <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+    <!-- Header -->
+    <ins class="adsbygoogle"
+         style="display: block"
+         data-ad-client="ca-pub-5579528543450650"
+         data-ad-slot="7848905214"
+         data-ad-format="auto"></ins>
+    <script>
+        (adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
+</div>
+
+    <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-8902901-4', 'auto');
+  ga('send', 'pageview');
+
+    </script>
+
+</body>
+</html>

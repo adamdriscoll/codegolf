@@ -1,0 +1,193 @@
+﻿@{
+    ViewData["Title"] = "Code Golf";
+}
+
+
+
+<div class="row">
+    <div class="col-md-4">
+        <h2> @Model.Name</h2>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-2">by <a href="http://github.com/@Model.Author"><i class="fa fa-github fa-lg"></i> @Model.Author</a></div>
+    <div class="col-md-1"><span class="label label-success">@Model.Language.DisplayName</span></div>
+</div>
+
+<hr/>
+
+
+<p id="description"></p>
+
+
+<h3>Input</h3>
+<pre id="input">@Model.Input</pre>
+
+<h3>Expected Output</h3>
+<pre id="output">@Model.Output</pre>
+
+<h3>Rounds</h3>
+<b>Click a round to see the solution.</b>
+<table class="table">
+    <tr>
+        <th>Player</th>
+        <th>Score</th>
+        <th>Date Played</th>
+        <th>Passing</th>
+        <th></th>
+    </tr>
+    @foreach (var item in Model.Solutions)
+    {
+        <tr onclick="CreateEditor('@(item.Id)')">
+            <td><i class="fa fa-github fa-lg" ></i> @item.Author</td>
+            <td><span class="badge">@item.Length </span></td>
+            <td>@item.RoundPlayed</td>
+            <td>
+                @if (item.Passing == null)
+                {
+                    <i class="fa fa-question fa-lg" style="color:gray"></i>
+                }
+                else if (item.Passing.Value)
+                {
+                    <i class="fa fa-check fa-lg" style="color:green"></i>
+                }
+                else
+                {
+                    <i class="fa fa-times fa-lg" style="color:red"></i>
+                }
+            </td>
+            <td>
+                @if (item.Author == Model.Identity)
+                {
+                    <a href="~/Solution/DeleteAsync?Guid=@item.Id"><i class="fa fa-trash-o fa-lg"></i></a>
+                }
+            </td>
+        </tr>
+        <tr style="display: none;" id="@(item.Id)container">
+            <td colspan="5">
+                <div id="@item.Id" style="height: 200px; border: 1px solid grey"></div>
+            </td>
+        </tr>
+    }
+
+</table>
+
+@if (@Model.Authenticated)
+{
+    <h3>Play a round</h3>
+    <hr />
+    <div style="padding-bottom: 10px" class="row">
+        <div class="col-md-2">
+            Strokes <span class="badge" id="solutionStrokes">0</span>
+        </div>
+
+        @if (Model.Language.SupportsValidation)
+        {
+            <div class="col-md-2">
+                <a id="testSolution"><i class="fa fa-play fa-lg"></i> Run</a>
+            </div>
+            <div class="col-md-2">
+                <i class="fa fa-question fa-lg" style="color: gray" id="solutionStatusUnknown"></i>
+                <i class="fa fa-circle-o-notch fa-spin" style="font-size: 24px; display: none;" id="solutionStatusRunning"></i>
+                <i class="fa fa-check fa-lg" style="color: green; display: none;" id="solutionStatusPassed"></i>
+                <i class="fa fa-times fa-lg" style="color: red; display: none;" id="solutionStatusFailed"></i>
+            </div>
+        }
+    </div>
+    <div id="container" style="height: 200px; border: 1px solid grey"></div>
+
+    if (Model.Language.SupportsValidation)
+    {
+        <textarea id="solutionOutput" style="height: 200px; border: 1px solid grey; font-family: consolas; width: 100%; max-width: 100%" readonly></textarea>
+    }
+
+    <div style="padding: 20px">
+        <form action="/Solution/PostAsync">
+            <input type="hidden" value="" Id="Content" Name="Content"/>
+            <input type="hidden" Id="Problem" Name="Problem" Value="@Model.Id"/>
+            <input class="btn btn-default" type="submit" value="Submit">
+        </form>
+    </div>
+}
+else
+{
+    <span><h2>Login to play!</h2></span>
+}
+
+
+<script>
+    function CreateEditor(id) {
+        $('#' + id + 'container').toggle();
+        if ($('#' + id + 'container').data('editor') !== 'true') {
+            require.config({ paths: { 'vs': '../../node_modules/monaco-editor/min/vs' } });
+            require(['vs/editor/editor.main'],
+            function () {
+                $.get('/Solution/Get/' + id,
+                    function(data) {
+                        monaco.editor.create(document.getElementById(id),
+                        {
+                            value: data.content,
+                            language: '@Model.Language.Name',
+                            readOnly: true
+                        });
+                    });
+            });
+
+            $('#' + id + 'container').data('editor', 'true');
+        }
+    }
+
+    $(document)
+        .ready(function () {
+            var converter = new showdown.Converter();
+            var html = converter.makeHtml('@Model.Description'.replace('&#xA;', '\n'));
+            $('#description').html(html);
+
+            require.config({ paths: { 'vs': '../../node_modules/monaco-editor/min/vs' } });
+            require(['vs/editor/editor.main'],
+                function() {
+                    var editor = monaco.editor.create(document.getElementById('container'),
+                    {
+                        value: "",
+                        language: '@Model.Language.Name'
+                    });
+
+                    editor.getModel()
+                        .onDidChangeContent(function(data) {
+                            var content = editor.getModel().getLinesContent().join('\n');
+                            $('#solutionStrokes').html(content.length);
+                            $('#Content').val(content);
+                        });
+
+
+                    $('#testSolution')
+                        .click(function () {
+                            $('#testSolution').hide();
+                            $('#solutionStatusPassed').hide();
+                            $('#solutionStatusFailed').hide();
+                            $('#solutionStatusUnknown').hide();
+
+                            $('#solutionStatusRunning').show();
+                            $.post("/Solution/ValidateAsync",
+                            {
+                                Problem: "@Model.Id",
+                                Content: editor.getModel().getLinesContent().join('\n')
+                            }, function(data) {
+                                if (data.succeeded) {
+                                    $('#solutionStatusPassed').show();
+                                    $('#solutionStatusFailed').hide();
+                                } else {    
+                                    $('#solutionStatusFailed').show();
+                                    $('#solutionStatusPassed').hide();
+                                }
+
+                                $('#solutionOutput').html(data.output);
+
+                                $('#solutionStatusRunning').hide();
+                                $('#testSolution').show();
+                            });
+                        });
+
+                });
+        });
+</script>

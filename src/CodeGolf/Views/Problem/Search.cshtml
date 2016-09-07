@@ -1,0 +1,25 @@
+﻿@model CodeGolf.ViewModels.SearchViewModel
+@{
+    ViewData["Title"] = "Code Golf";
+}
+<h3>Holes Matching "@Model.Criteria"</h3>
+<table class="table">
+    <tr>
+        <th>Language</th>
+        <th>Name</th>
+        <th>Author</th>
+        <th>Rounds Played</th>
+        <th>Low Score</th>
+    </tr>
+    @foreach (var item in Model.Problems)
+    {
+        <tr>
+            <td><span class="label label-success">@item.Language</span></td>
+            <td><a href="/problem/index/@item.Id">@item.Name</a></td>
+            <td><a href="http://github.com/@Model.Identity"><i class="fa fa-github fa-lg"></i>  @item.Author</a></td>
+            <td><span class="badge">@item.SolutionCount </span></td>
+            <td><span class="badge">@item.ShortestSolution </span></td>
+        </tr>
+    }
+
+</table>

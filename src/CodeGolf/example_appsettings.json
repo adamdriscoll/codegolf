@@ -1,0 +1,32 @@
+﻿{
+  "DocumentDbConfig": {
+    "EndpointUri": "",
+    "PrimaryKey": "",
+    "DocumentDB": "CodeGolfDB",
+    "DocumentCollection": "CodeGolfCollection",
+    "DebugDocumentDB": "CodeGolfDB_Debug"
+  },
+  "GitHubConfig": {
+    "ClientId": "",
+    "ClientSecret": "",
+    "DebugClientId": "",
+    "DebugClientSecret": ""
+  },
+  "AzureFunctionApi": {
+    "Url": "",
+    "ExecutionUrl": "",
+    "Username": "",
+    "Password": ""
+  },
+  "ApplicationInsights": {
+    "InstrumentationKey": ""
+  },
+  "Logging": {
+    "IncludeScopes": false,
+    "LogLevel": {
+      "Default": "Debug",
+      "System": "Information",
+      "Microsoft": "Information"
+    }
+  }
+}
