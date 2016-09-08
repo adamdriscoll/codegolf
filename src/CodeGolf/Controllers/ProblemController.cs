@@ -52,6 +52,7 @@ namespace CodeGolf.Controllers
                 HttpContext.User.Identity.Name));
         }
 
+        [Authorize]
         public async Task<IActionResult> PostAsync(Problem problem)
         {
             if (problem == null)
