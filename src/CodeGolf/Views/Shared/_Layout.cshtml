@@ -97,42 +97,35 @@
 
 
 
-<!--
-<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle"
-        style="display: inline-block; width: 300px; height: 600px"
-        data-ad-client="ca-pub-5579528543450650"
-        data-ad-slot="6953340413"></ins>
-<script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-</script>-->
-
-
-
 @RenderSection("scripts", required: false)
-<div class="text-center">
-    <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-    <!-- Header -->
-    <ins class="adsbygoogle"
-         style="display: block"
-         data-ad-client="ca-pub-5579528543450650"
-         data-ad-slot="7848905214"
-         data-ad-format="auto"></ins>
-    <script>
-        (adsbygoogle = window.adsbygoogle || []).push({});
-    </script>
-</div>
 
-    <script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+    <environment names="Staging,Production">
 
-  ga('create', 'UA-8902901-4', 'auto');
-  ga('send', 'pageview');
+        <div class="text-center">
+            <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+            <!-- Header -->
+            <ins class="adsbygoogle"
+                 style="display: block"
+                 data-ad-client="ca-pub-5579528543450650"
+                 data-ad-slot="7848905214"
+                 data-ad-format="auto"></ins>
+            <script>
+                (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
+        </div>
 
-    </script>
+        <script>
+            (function (i, s, o, g, r, a, m) {
+                i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+                    (i[r].q = i[r].q || []).push(arguments)
+                }, i[r].l = 1 * new Date(); a = s.createElement(o),
+                m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+            })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
 
+            ga('create', 'UA-8902901-4', 'auto');
+            ga('send', 'pageview');
+
+        </script>
+    </environment>
 </body>
 </html>
