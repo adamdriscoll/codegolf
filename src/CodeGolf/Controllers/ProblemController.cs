@@ -52,6 +52,48 @@ namespace CodeGolf.Controllers
                 HttpContext.User.Identity.Name));
         }
 
+
+        [Authorize]
+        public IActionResult Edit(Guid id)
+        {
+            var problem = _documentDbService.GetDocument<Problem>(id);
+
+            var editProblem = new EditProblem(problem, HttpContext.User.Identity.IsAuthenticated, HttpContext.User.Identity.Name);
+            editProblem.Languages = _documentDbService.GetDocumentType<Language>(DocumentType.Language);
+
+            return View(editProblem);
+        }
+
+        [Authorize]
+        public async Task<IActionResult> EditAsync(Guid id, string input, string output, string description, Guid language, string name)
+        {
+            if (string.IsNullOrEmpty(output) || string.IsNullOrWhiteSpace(description) || string.IsNullOrWhiteSpace(name))
+                throw new Exception("All details are required to create a problem");
+
+            var problem = _documentDbService.GetDocument<Problem>(id);
+
+            if (problem == null)
+                throw new ArgumentNullException(nameof(problem));
+
+            var user = _documentDbService.Client.CreateDocumentQuery<User>(_documentDbService.DatabaseUri).Where(m => m.Identity == this.HttpContext.User.Identity.Name && m.Authentication == this.HttpContext.User.Identity.AuthenticationType).ToList().FirstOrDefault();
+            if (user == null)
+                throw new Exception("User not found!");
+
+            if (user.Id != problem.Author)
+                throw new Exception("User is not author!");
+
+            problem.Input = input;
+            problem.Output = output;
+            problem.Description = description;
+            problem.Language = language;
+            problem.Name = name;
+
+            await _documentDbService.UpdateDocument(problem);
+
+            return Redirect("/Problem/Index/" + problem.Id);
+        }
+
+
         [Authorize]
         public async Task<IActionResult> PostAsync(Problem problem)
         {

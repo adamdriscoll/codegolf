@@ -12,6 +12,11 @@
 <div class="row">
     <div class="col-md-2">by <a href="http://github.com/@Model.Author"><i class="fa fa-github fa-lg"></i> @Model.Author</a></div>
     <div class="col-md-1"><span class="label label-success">@Model.Language.DisplayName</span></div>
+    
+    @if (Model.Author == Model.Identity)
+    {
+        <div class="col-md-1"><a href="~/Problem/Edit/@Model.Id"><i class="fa fa-pencil-square-o fa-lg"></i> Edit</a></div>
+    }
 </div>
 
 <hr/>

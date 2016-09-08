@@ -1,0 +1,91 @@
+﻿@{
+    ViewData["Title"] = "Code Golf";
+}
+
+<form action="/Problem/EditAsync">
+    <div class="form-group">
+        <label for="name">Name</label>
+        <input type="text" id="name" class="form-control" placeholder="Name" name="Name" value="@Model.Problem.Name" />
+    </div>
+    <div class="form-group">
+        <label for="name">Language</label>
+        <select class="form-control" id="language" name="Language">
+            @foreach (var language in Model.Languages)
+            {
+                <option value='@language.Id'>@language.DisplayName</option>
+            }
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="description">Description</label>
+        <br />
+        <small>Describe your problem. You can use markdown in the editor below.</small>
+        <div id="description" style="width: 800px; height: 200px; border: 1px solid grey"></div>
+    </div>
+    <div class="form-group">
+        <label for="input">Input</label>
+        <br />
+        <small>Define the inputs to your problem. Input isn't required. Input should be valid syntax for the language you select.</small>
+        <div id="input" style="width: 800px; height: 200px; border: 1px solid grey"></div>
+    </div>
+    <div class="form-group">
+        <label for="output">Expected Output</label>
+        <br />
+        <small>Define outputs to your problem.</small>
+        <div id="output" style="width: 800px; height: 200px; border: 1px solid grey"></div>
+    </div>
+    <input class="btn btn-default" type="Submit" value="Submit">
+    <input type="hidden" id="descriptionInput" name="description" />
+    <input type="hidden" id="inputInput" name="input" />
+    <input type="hidden" id="outputInput" name="output"/>
+    <input type="hidden" name="id" value="@Model.Problem.Id" />
+
+</form>
+
+<script>
+    $(document)
+        .ready(function () {
+            var description, input, output;
+            require.config({ paths: { 'vs': '../../node_modules/monaco-editor/min/vs' } });
+            require(['vs/editor/editor.main'],
+                function() {
+                    description = monaco.editor.create(document.getElementById('description'),
+                    {
+                        value: '@Model.Problem.Description',
+                        language: 'markdown'
+                    });
+
+                    input = monaco.editor.create(document.getElementById('input'),
+                    {
+                        value: '@Model.Problem.Input',
+                        language: 'markdown'
+                    });
+
+                    output = monaco.editor.create(document.getElementById('output'),
+                    {
+                        value: '@Model.Problem.Output',
+                        language: 'markdown'
+                    });
+
+                    $('#outputInput').val('@Model.Problem.Output');
+                    $('#inputInput').val('@Model.Problem.Input');
+                    $('#descriptionInput').val('@Model.Problem.Description');
+                    $('#language').val('@Model.Problem.Language');
+
+                    output.getModel().onDidChangeContent(function (data) {
+                        var content = output.getModel().getLinesContent().join('\n');
+                        $('#outputInput').val(content);
+                    });
+
+                    input.getModel().onDidChangeContent(function (data) {
+                        var content = input.getModel().getLinesContent().join('\n');
+                        $('#inputInput').val(content);
+                    });
+
+                    description.getModel().onDidChangeContent(function (data) {
+                        var content = description.getModel().getLinesContent().join('\n');
+                        $('#descriptionInput').val(content);
+                    });
+                });
+        });
+</script>

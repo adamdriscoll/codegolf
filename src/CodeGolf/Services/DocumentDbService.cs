@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -121,6 +122,11 @@ namespace CodeGolf.Services
         internal async Task DeleteDocument(Guid id)
         {
             await Client.DeleteDocumentAsync(UriFactory.CreateDocumentUri(_database, _documentCollection, id.ToString()));
+        }
+
+        internal IEnumerable<T> GetDocumentType<T>(DocumentType type) where T : CodeGolfDocument
+        {
+            return Client.CreateDocumentQuery<T>(DatabaseUri).Where(m => m.Type == type);
         }
     }
 
