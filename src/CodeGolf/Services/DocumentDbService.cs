@@ -11,6 +11,8 @@ namespace CodeGolf.Services
 {
     public class DocumentDbService
     {
+        private Dictionary<Guid, object> _cache = new Dictionary<Guid, object>();
+
         public DocumentDbService(DocumentDbConfig config)
         {
             _database = config.Database;
@@ -107,11 +109,23 @@ namespace CodeGolf.Services
             await Client.CreateDocumentAsync(UriFactory.CreateDocumentCollectionUri(_database, _documentCollection), document);
         }
 
-        internal T GetDocument<T>(Guid id) where T : CodeGolfDocument
+        internal T GetDocument<T>(Guid id, bool cache = false) where T : CodeGolfDocument
         {
-            return
+            if (cache && _cache.ContainsKey(id))
+            {
+                return _cache[id] as T;
+            }
+
+            var document = 
                 Client.CreateDocumentQuery<T>(UriFactory.CreateDocumentCollectionUri(_database, _documentCollection))
                     .Where(m => m.Id == id).ToList().FirstOrDefault();
+
+            if (cache)
+            {
+                _cache.Add(id, document);
+            }
+
+            return document;
         }
 
         internal async Task UpdateDocument(object document)

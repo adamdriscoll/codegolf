@@ -10,7 +10,7 @@
     </div>
 </div>
 <div class="row">
-    <div class="col-md-2">by <a href="http://github.com/@Model.Author"><i class="fa fa-github fa-lg"></i> @Model.Author</a></div>
+    <div class="col-md-2">by <a href="~/Profile/Get/@Model.AuthorId"><i class="fa fa-github fa-lg"></i> @Model.Author</a></div>
     <div class="col-md-1"><span class="label label-success">@Model.Language.DisplayName</span></div>
     
     @if (Model.Author == Model.Identity)
@@ -43,7 +43,7 @@
     @foreach (var item in Model.Solutions)
     {
         <tr onclick="CreateEditor('@(item.Id)')">
-            <td><i class="fa fa-github fa-lg" ></i> @item.Author</td>
+            <td><a href="~/Profile/Get/@item.AuthorId"><i class="fa fa-github fa-lg"></i> @item.Author</a></td>
             <td><span class="badge">@item.Length </span></td>
             <td>@item.RoundPlayed</td>
             <td>

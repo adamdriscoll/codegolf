@@ -25,7 +25,7 @@ namespace CodeGolf.Controllers
         {
             var problem = _documentDbService.GetDocument<Problem>(id);
             var author = _documentDbService.GetDocument<User>(problem.Author);
-            var language = _documentDbService.GetDocument<Language>(problem.Language);
+            var language = _documentDbService.GetDocument<Language>(problem.Language, true);
 
             if (problem == null) throw new Exception("Problem does not exist!");
 
@@ -36,11 +36,8 @@ namespace CodeGolf.Controllers
                 if (solution != null)
                 {
                     var user = _documentDbService.GetDocument<User>(solution.Author);
-                    var userIdentity = String.Empty;
-                    if (user != null)
-                        userIdentity = user.Identity;
 
-                    var svm = new SolutionDetail(solution, userIdentity);
+                    var svm = new SolutionDetail(solution, user);
 
                     solutions.Add(svm);
                 }
@@ -48,7 +45,7 @@ namespace CodeGolf.Controllers
 
             solutions = solutions.OrderBy(m => m.Passing != null && m.Passing.Value).ThenBy(m => m.Length).ToList();
 
-            return View(new ProblemDetails(problem, solutions, author.Identity, language, HttpContext.User.Identity.IsAuthenticated,
+            return View(new ProblemDetails(problem, solutions, author, language, HttpContext.User.Identity.IsAuthenticated,
                 HttpContext.User.Identity.Name));
         }
 
@@ -128,8 +125,7 @@ namespace CodeGolf.Controllers
             var problem = _documentDbService.Client.CreateDocumentQuery<Problem>(_documentDbService.DatabaseUri)
                 .FirstOrDefault(m => m.Id == id);
 
-            return _documentDbService.Client.CreateDocumentQuery<Language>(_documentDbService.DatabaseUri)
-               .FirstOrDefault(m => m.Id == problem.Language);
+            return _documentDbService.GetDocument<Language>(problem.Id, true);
         }
 
         [Authorize]
@@ -175,7 +171,7 @@ namespace CodeGolf.Controllers
 
             foreach (var problem in problems)
             {
-                var language = _documentDbService.GetDocument<Language>(problem.Language);
+                var language = _documentDbService.GetDocument<Language>(problem.Language, true);
                 var author = _documentDbService.GetDocument<User>(problem.Author);
 
                 if (language == null)

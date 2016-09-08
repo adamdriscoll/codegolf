@@ -36,7 +36,7 @@ namespace CodeGolf.Controllers
 
             foreach (var problem in problems)
             {
-                var language = _documentDbService.GetDocument<Language>(problem.Language);
+                var language = _documentDbService.GetDocument<Language>(problem.Language, true);
                 var author = _documentDbService.GetDocument<User>(problem.Author);
 
                 if (language == null)
@@ -61,7 +61,8 @@ namespace CodeGolf.Controllers
                     Language = language.DisplayName,
                     ShortestSolution = topSolutionLength,
                     SolutionCount = solutions.Count,
-                    Author = author.Identity
+                    Author = author.Identity,
+                    AuthorId = author.Id.ToString()
                 };
             }
         }
@@ -100,7 +101,8 @@ namespace CodeGolf.Controllers
                     Language = language.DisplayName,
                     ShortestSolution = topSolutionLength,
                     SolutionCount = solutions.Count,
-                    Author = author.Identity
+                    Author = author.Identity,
+                    AuthorId = author.Id.ToString()
                 };
             }
         }

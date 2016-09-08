@@ -66,7 +66,7 @@ namespace CodeGolf.Controllers
         public async Task<SolutionValidationResult> ValidateAsync(Guid problem, string content)
         {
             var theProblem = _documentDbService.GetDocument<Problem>(problem);
-            var language = _documentDbService.GetDocument<Language>(theProblem.Language);
+            var language = _documentDbService.GetDocument<Language>(theProblem.Language, true);
 
             var validation = new SolutionValidationResult();
 

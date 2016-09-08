@@ -8,11 +8,12 @@ namespace CodeGolf.ViewModels
     {
         private readonly Problem _problem;
 
-        public ProblemDetails(Problem problem, IEnumerable<SolutionDetail> solutions, string author, Language language, bool authenticated, string identity) : base(authenticated, identity)
+        public ProblemDetails(Problem problem, IEnumerable<SolutionDetail> solutions, User author, Language language, bool authenticated, string identity) : base(authenticated, identity)
         {
             _problem = problem;
             Solutions = solutions;
-            Author = author;
+            Author = author.Identity;
+            AuthorId = author.Id.ToString();
             Language = language;
         }
 
@@ -22,6 +23,7 @@ namespace CodeGolf.ViewModels
         public string Input => _problem.Input;
         public string Output => _problem.Output;
         public string Author { get; set; }
+        public string AuthorId { get; set; }
 
         public IEnumerable<SolutionDetail> Solutions { get; set; }
 

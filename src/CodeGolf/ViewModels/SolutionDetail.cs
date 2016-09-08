@@ -7,10 +7,11 @@ namespace CodeGolf.ViewModels
     {
         private readonly Solution _solution;
 
-        public SolutionDetail(Solution solution, string author)
+        public SolutionDetail(Solution solution, User author)
         {
             _solution = solution;
-            Author = author;
+            Author = author.Identity;
+            AuthorId = author.Id.ToString();
         }
 
         public string Content => _solution.Content;
@@ -18,6 +19,7 @@ namespace CodeGolf.ViewModels
         public int Length => _solution.Length;
         public DateTime RoundPlayed => _solution.DateAdded;
         public string Author { get; set; }
+        public string AuthorId { get; set; }
 
         public bool? Passing => _solution.Passing;
     }
