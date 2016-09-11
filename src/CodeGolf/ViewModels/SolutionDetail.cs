@@ -18,8 +18,15 @@ namespace CodeGolf.ViewModels
         public Guid Id => _solution.Id;
         public int Length => _solution.Length;
         public DateTime RoundPlayed => _solution.DateAdded;
+
+        public int Votes => _solution.Votes;
+
         public string Author { get; set; }
         public string AuthorId { get; set; }
+
+        public bool CanVote { get; set; }
+
+        public int VoteValue { get; set; }
 
         public bool? Passing => _solution.Passing;
     }

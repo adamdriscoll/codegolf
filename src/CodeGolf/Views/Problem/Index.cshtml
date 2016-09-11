@@ -34,6 +34,7 @@
 <b>Click a round to see the solution.</b>
 <table class="table">
     <tr>
+        <th>Crowd Appeal</th>
         <th>Player</th>
         <th>Score</th>
         <th>Date Played</th>
@@ -43,21 +44,26 @@
     @foreach (var item in Model.Solutions)
     {
         <tr onclick="CreateEditor('@(item.Id)')">
+            <td>
+                <span><a onclick="Upvote('@item.Id')"><i class="fa fa-arrow-up fa-lg" id="upvote-@item.Id"></i></a></span>
+                <span id="votes-@item.Id">@item.Votes</span>
+                <span><a onclick="Downvote('@item.Id')"><i class="fa fa-arrow-down fa-lg" id="downvote-@item.Id"></i></a></span>
+            </td>
             <td><a href="~/Profile/Get/@item.AuthorId"><i class="fa fa-github fa-lg"></i> @item.Author</a></td>
             <td><span class="badge">@item.Length </span></td>
             <td>@item.RoundPlayed</td>
             <td>
                 @if (item.Passing == null)
                 {
-                    <i class="fa fa-question fa-lg" style="color:gray"></i>
+                    <i class="fa fa-question fa-lg" style="color: gray"></i>
                 }
                 else if (item.Passing.Value)
                 {
-                    <i class="fa fa-check fa-lg" style="color:green"></i>
+                    <i class="fa fa-check fa-lg" style="color: green"></i>
                 }
                 else
                 {
-                    <i class="fa fa-times fa-lg" style="color:red"></i>
+                    <i class="fa fa-times fa-lg" style="color: red"></i>
                 }
             </td>
             <td>
@@ -139,6 +145,38 @@ else
 
             $('#' + id + 'container').data('editor', 'true');
         }
+    }
+
+    function Upvote(id) {
+        if ($('#upvote-' + id).css('font-weight') === 'bold') {
+            return;
+        }
+
+        $.post('/Solution/Vote/',
+           {
+               Item: id,
+               Value: 1
+           },
+           function() {
+                   $('#upvote-' + id).css('font-weight', 'bold');
+                   $('#downvote-' + id).css('font-weight', 'normal');
+           });
+    }
+
+    function Downvote(id) {
+        if ($('#downvote-' + id).css('font-weight') === 'bold') {
+            return;
+        }
+
+        $.post('/Solution/Vote/',
+           {
+               Item: id,
+               Value: -1
+           },
+           function() {
+               $('#upvote-' + id).css('font-weight', 'normal');
+               $('#downvote-' + id).css('font-weight', 'bold');
+           });
     }
 
     $(document)

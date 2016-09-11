@@ -17,5 +17,7 @@ namespace CodeGolf.Models
         public bool? Passing { get; set; }
 
         public override DocumentType Type => DocumentType.Solution;
+
+        public int Votes { get; set; }
     }
 }

@@ -125,7 +125,14 @@ namespace CodeGolf.Controllers
         [Authorize]
         public async Task Vote(Vote vote)
         {
+            if (vote.Value != 1 && vote.Value != -1)
+            {
+                throw new Exception("Invalid vote value!");
+            }
+
             var user = await GetRequestUser();
+
+            var solution = DocumentDbService.GetDocument<Solution>(vote.Item);
 
             var castVote = DocumentDbService.GetDocumentType<Vote>(DocumentType.Vote)
                 .Where(m => m.Item == vote.Item && m.Voter == user.Id)
@@ -134,11 +141,18 @@ namespace CodeGolf.Controllers
 
             if (castVote == null)
             {
+                vote.Voter = user.Id;
+                vote.ItemType = DocumentType.Solution;
                 await DocumentDbService.CreateDocument(vote);
+                solution.Votes += vote.Value;
+                await DocumentDbService.UpdateDocument(solution);
             }
             else if (castVote.Value != vote.Value)
             {
-                await DocumentDbService.UpdateDocument(vote);
+                castVote.Value = vote.Value;
+                await DocumentDbService.UpdateDocument(castVote);
+                solution.Votes += vote.Value * 2;
+                await DocumentDbService.UpdateDocument(solution);
             }
 
         }
