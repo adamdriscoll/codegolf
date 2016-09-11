@@ -21,6 +21,7 @@ namespace CodeGolf.Models
         Solution,
         Language,
         User,
-        Version
+        Version,
+        Vote
     }
 }

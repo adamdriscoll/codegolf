@@ -12,40 +12,37 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CodeGolf.Controllers
 {
-    public class ProblemController : Controller
+    public class ProblemController : AuthorizedController
     {
-        private readonly DocumentDbService _documentDbService;
-        public ProblemController(DocumentDbService dbService)
+        public ProblemController(DocumentDbService dbService) : base(dbService)
         {
-            _documentDbService = dbService;
         }
 
         // GET: /<controller>/
         public IActionResult Index(Guid id)
         {
-            var problem = _documentDbService.GetDocument<Problem>(id);
-            var author = _documentDbService.GetDocument<User>(problem.Author);
-            var language = _documentDbService.GetDocument<Language>(problem.Language, true);
+            var problem = DocumentDbService.GetDocument<Problem>(id);
+            var author = DocumentDbService.GetDocument<User>(problem.Author);
+            var language = DocumentDbService.GetDocument<Language>(problem.Language, true);
 
             if (problem == null) throw new Exception("Problem does not exist!");
 
-            var solutions = new List<SolutionDetail>();
-            foreach (var solutionId in problem.Solutions)
+            var solutions = DocumentDbService.Client.CreateDocumentQuery<Solution>(DocumentDbService.DatabaseUri)
+                .Where(m => m.Type == DocumentType.Solution && problem.Solutions.Contains(m.Id));
+
+            var solutionDetails = new List<SolutionDetail>();
+            foreach (var solution in solutions)
             {
-                var solution = _documentDbService.GetDocument<Solution>(solutionId);
-                if (solution != null)
-                {
-                    var user = _documentDbService.GetDocument<User>(solution.Author);
+                var user = DocumentDbService.GetDocument<User>(solution.Author);
 
-                    var svm = new SolutionDetail(solution, user);
+                var svm = new SolutionDetail(solution, user);
 
-                    solutions.Add(svm);
-                }
+                solutionDetails.Add(svm);
             }
 
-            solutions = solutions.OrderBy(m => m.Passing != null && m.Passing.Value).ThenBy(m => m.Length).ToList();
+            solutionDetails = solutionDetails.OrderBy(m => m.Passing != null && m.Passing.Value).ThenBy(m => m.Length).ToList();
 
-            return View(new ProblemDetails(problem, solutions, author, language, HttpContext.User.Identity.IsAuthenticated,
+            return View(new ProblemDetails(problem, solutionDetails, author, language, HttpContext.User.Identity.IsAuthenticated,
                 HttpContext.User.Identity.Name));
         }
 
@@ -53,10 +50,10 @@ namespace CodeGolf.Controllers
         [Authorize]
         public IActionResult Edit(Guid id)
         {
-            var problem = _documentDbService.GetDocument<Problem>(id);
+            var problem = DocumentDbService.GetDocument<Problem>(id);
 
             var editProblem = new EditProblem(problem, HttpContext.User.Identity.IsAuthenticated, HttpContext.User.Identity.Name);
-            editProblem.Languages = _documentDbService.GetDocumentType<Language>(DocumentType.Language);
+            editProblem.Languages = DocumentDbService.GetDocumentType<Language>(DocumentType.Language);
 
             return View(editProblem);
         }
@@ -64,17 +61,15 @@ namespace CodeGolf.Controllers
         [Authorize]
         public async Task<IActionResult> EditAsync(Guid id, string input, string output, string description, Guid language, string name)
         {
+            var user = await GetRequestUser();
+
             if (string.IsNullOrEmpty(output) || string.IsNullOrWhiteSpace(description) || string.IsNullOrWhiteSpace(name))
                 throw new Exception("All details are required to create a problem");
 
-            var problem = _documentDbService.GetDocument<Problem>(id);
+            var problem = DocumentDbService.GetDocument<Problem>(id);
 
             if (problem == null)
                 throw new ArgumentNullException(nameof(problem));
-
-            var user = _documentDbService.Client.CreateDocumentQuery<User>(_documentDbService.DatabaseUri).Where(m => m.Identity == this.HttpContext.User.Identity.Name && m.Authentication == this.HttpContext.User.Identity.AuthenticationType).ToList().FirstOrDefault();
-            if (user == null)
-                throw new Exception("User not found!");
 
             if (user.Id != problem.Author)
                 throw new Exception("User is not author!");
@@ -85,7 +80,7 @@ namespace CodeGolf.Controllers
             problem.Language = language;
             problem.Name = name;
 
-            await _documentDbService.UpdateDocument(problem);
+            await DocumentDbService.UpdateDocument(problem);
 
             return Redirect("/Problem/Index/" + problem.Id);
         }
@@ -100,7 +95,7 @@ namespace CodeGolf.Controllers
             if (string.IsNullOrEmpty(problem.Description) || string.IsNullOrWhiteSpace(problem.Name)  || string.IsNullOrWhiteSpace(problem.Output))
                 throw new Exception("All details are required to create a problem");
 
-            var user = _documentDbService.Client.CreateDocumentQuery<User>(_documentDbService.DatabaseUri).Where(m => m.Identity == this.HttpContext.User.Identity.Name && m.Authentication == this.HttpContext.User.Identity.AuthenticationType).ToList().FirstOrDefault();
+            var user = DocumentDbService.Client.CreateDocumentQuery<User>(DocumentDbService.DatabaseUri).Where(m => m.Identity == this.HttpContext.User.Identity.Name && m.Authentication == this.HttpContext.User.Identity.AuthenticationType).ToList().FirstOrDefault();
             if (user == null)
             {
                 user = new User
@@ -109,12 +104,12 @@ namespace CodeGolf.Controllers
                     Authentication = this.HttpContext.User.Identity.AuthenticationType
                 };
 
-                await _documentDbService.CreateDocument(user);
+                await DocumentDbService.CreateDocument(user);
             }
 
             problem.Author = user.Id;
 
-            await _documentDbService.CreateDocument(problem);
+            await DocumentDbService.CreateDocument(problem);
 
             return Redirect("/Problem/Index/" + problem.Id);
         }
@@ -122,19 +117,19 @@ namespace CodeGolf.Controllers
         [HttpGet]
         public Language Language(Guid id)
         {
-            var problem = _documentDbService.Client.CreateDocumentQuery<Problem>(_documentDbService.DatabaseUri)
+            var problem = DocumentDbService.Client.CreateDocumentQuery<Problem>(DocumentDbService.DatabaseUri)
                 .FirstOrDefault(m => m.Id == id);
 
-            return _documentDbService.GetDocument<Language>(problem.Id, true);
+            return DocumentDbService.GetDocument<Language>(problem.Id, true);
         }
 
         [Authorize]
         public IActionResult New()
         {
-            var viewModel = new NewProblem(HttpContext.User.Identity.IsAuthenticated,
-                HttpContext.User.Identity.Name)
+            var user = GetRequestUser().Result;
+            var viewModel = new NewProblem(true, user.Identity)
             {
-                Languages = _documentDbService.Client.CreateDocumentQuery<Language>(_documentDbService.DatabaseUri).Where(m => m.Type == DocumentType.Language).OrderBy(m => m.DisplayName)
+                Languages = DocumentDbService.Client.CreateDocumentQuery<Language>(DocumentDbService.DatabaseUri).Where(m => m.Type == DocumentType.Language).OrderBy(m => m.DisplayName)
             };
            
             return View(viewModel);
@@ -144,7 +139,7 @@ namespace CodeGolf.Controllers
         public IEnumerable<Problem> Popular()
         {
             
-            var list = _documentDbService.Client.CreateDocumentQuery<Problem>(_documentDbService.DatabaseUri)
+            var list = DocumentDbService.Client.CreateDocumentQuery<Problem>(DocumentDbService.DatabaseUri)
                 .Where(m => m.Type == DocumentType.Problem && m.Solutions.Length > 5)
                 .OrderByDescending(m => m.DateAdded)
                 .ThenByDescending(m => m.Solutions.Length)
@@ -156,28 +151,27 @@ namespace CodeGolf.Controllers
         public IActionResult Search( string criteria)
         {
             var recentProblems = SearchProblems(criteria);
-            var vm = new SearchViewModel(criteria, recentProblems, HttpContext.User.Identity.IsAuthenticated,
-                HttpContext.User.Identity.Name);
+            var vm = new SearchViewModel(criteria, recentProblems, HttpContext.User.Identity.IsAuthenticated, HttpContext.User.Identity.Name);
 
             return View(vm);
         }
 
         private IEnumerable<RecentProblem> SearchProblems(string critieria)
         {
-            var problems = _documentDbService.Client.CreateDocumentQuery<Problem>(_documentDbService.DatabaseUri)
+            var problems = DocumentDbService.Client.CreateDocumentQuery<Problem>(DocumentDbService.DatabaseUri)
                 .Where(m => m.Type == DocumentType.Problem && (m.Name.Contains(critieria) || m.Description.Contains(critieria)))
                 .OrderByDescending(m => m.DateAdded)
                 .Take(10).ToList();
 
             foreach (var problem in problems)
             {
-                var language = _documentDbService.GetDocument<Language>(problem.Language, true);
-                var author = _documentDbService.GetDocument<User>(problem.Author);
+                var language = DocumentDbService.GetDocument<Language>(problem.Language, true);
+                var author = DocumentDbService.GetDocument<User>(problem.Author);
 
                 if (language == null)
                     throw new Exception("Language cannot be null.");
 
-                var solutions = _documentDbService.Client.CreateDocumentQuery<Solution>(_documentDbService.DatabaseUri)
+                var solutions = DocumentDbService.Client.CreateDocumentQuery<Solution>(DocumentDbService.DatabaseUri)
                     .Where(m => problem.Solutions.Contains(m.Id))
                     .OrderBy(m => m.Length)
                     .ToList();
@@ -203,7 +197,7 @@ namespace CodeGolf.Controllers
         [HttpGet]
         public Problem Get(Guid id)
         {
-            return _documentDbService.GetDocument<Problem>(id);
+            return DocumentDbService.GetDocument<Problem>(id);
         }
     }
 }

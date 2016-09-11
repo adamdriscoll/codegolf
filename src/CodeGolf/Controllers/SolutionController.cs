@@ -10,45 +10,40 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CodeGolf.Controllers
 {
-    public class SolutionController : Controller
+    public class SolutionController : AuthorizedController
     {
-        private readonly DocumentDbService _documentDbService;
         private readonly AzureFunctionsService _azureFunctionsService;
 
-        public SolutionController(DocumentDbService dbService, AzureFunctionsService azureFunctionsService)
+        public SolutionController(DocumentDbService dbService, AzureFunctionsService azureFunctionsService) : base(dbService)
         {
-            _documentDbService = dbService;
             _azureFunctionsService = azureFunctionsService;
         }
 
         [HttpGet]
         public Solution Get(Guid id)
         {
-            return _documentDbService.GetDocument<Solution>(id);
+            return DocumentDbService.GetDocument<Solution>(id);
         }
 
         [HttpGet]
         public string Raw(Guid id)
         {
-            return _documentDbService.GetDocument<Solution>(id).Content;
+            return DocumentDbService.GetDocument<Solution>(id).Content;
         }
 
         [Authorize]
         public async Task<IActionResult> DeleteAsync(Guid guid)
         {
-            var solution = _documentDbService.GetDocument<Solution>(guid);
+            var solution = DocumentDbService.GetDocument<Solution>(guid);
             if (solution == null)
                 throw new Exception("Solution not found!");
 
-            var user = _documentDbService.Client.CreateDocumentQuery<User>(_documentDbService.DatabaseUri).Where(m => m.Identity == this.HttpContext.User.Identity.Name && m.Authentication == this.HttpContext.User.Identity.AuthenticationType).ToList().FirstOrDefault();
-
-            if (user == null)
-                throw new Exception("User not found!");
+            var user = await GetRequestUser();
 
             if (solution.Author != user.Id)
                 throw new Exception("User does not own solution!");
 
-            var problem = _documentDbService.GetDocument<Problem>(solution.Problem);
+            var problem = DocumentDbService.GetDocument<Problem>(solution.Problem);
             if (problem == null)
                 throw new Exception("Problem not found!");
 
@@ -56,8 +51,8 @@ namespace CodeGolf.Controllers
             solutions.Remove(guid);
             problem.Solutions = solutions.ToArray();
             problem.SolutionCount--;
-            await _documentDbService.UpdateDocument(problem);
-            await _documentDbService.DeleteDocument(solution.Id);
+            await DocumentDbService.UpdateDocument(problem);
+            await DocumentDbService.DeleteDocument(solution.Id);
 
             return Redirect("/Problem/Index/" + problem.Id);
         }
@@ -65,8 +60,8 @@ namespace CodeGolf.Controllers
         [Authorize]
         public async Task<SolutionValidationResult> ValidateAsync(Guid problem, string content)
         {
-            var theProblem = _documentDbService.GetDocument<Problem>(problem);
-            var language = _documentDbService.GetDocument<Language>(theProblem.Language, true);
+            var theProblem = DocumentDbService.GetDocument<Problem>(problem);
+            var language = DocumentDbService.GetDocument<Language>(theProblem.Language, true);
 
             var validation = new SolutionValidationResult();
 
@@ -112,30 +107,40 @@ namespace CodeGolf.Controllers
             if (string.IsNullOrWhiteSpace(solution.Content))
                 throw new Exception("Content is required for solution.");
 
-            var user = _documentDbService.Client.CreateDocumentQuery<User>(_documentDbService.DatabaseUri).Where(m => m.Identity == this.HttpContext.User.Identity.Name && m.Authentication == this.HttpContext.User.Identity.AuthenticationType).ToList().FirstOrDefault();
-            if (user == null)
-            {
-                user = new User
-                {
-                    Identity = this.HttpContext.User.Identity.Name,
-                    Authentication = this.HttpContext.User.Identity.AuthenticationType
-                };
-
-                await _documentDbService.CreateDocument(user);
-            }
-
+            var user = await GetRequestUser();
             solution.Author = user.Id;
 
-            await _documentDbService.CreateDocument(solution);
-            var problem = _documentDbService.GetDocument<Problem>(solution.Problem);
+            await DocumentDbService.CreateDocument(solution);
+            var problem = DocumentDbService.GetDocument<Problem>(solution.Problem);
             var list = problem.Solutions.ToList();
             list.Add(solution.Id);
             problem.Solutions = list.ToArray();
             problem.SolutionCount = problem.Solutions.Length;
 
-            await _documentDbService.Client.UpsertDocumentAsync(_documentDbService.DatabaseUri, problem);
+            await DocumentDbService.Client.UpsertDocumentAsync(DocumentDbService.DatabaseUri, problem);
 
             return Redirect("/Problem/Index/" + problem.Id);
+        }
+
+        [Authorize]
+        public async Task Vote(Vote vote)
+        {
+            var user = await GetRequestUser();
+
+            var castVote = DocumentDbService.GetDocumentType<Vote>(DocumentType.Vote)
+                .Where(m => m.Item == vote.Item && m.Voter == user.Id)
+                .ToList()
+                .FirstOrDefault();
+
+            if (castVote == null)
+            {
+                await DocumentDbService.CreateDocument(vote);
+            }
+            else if (castVote.Value != vote.Value)
+            {
+                await DocumentDbService.UpdateDocument(vote);
+            }
+
         }
     }
 }
