@@ -100,6 +100,29 @@ namespace CodeGolf.Services
         public Version Version => new Version(1,1);
     }
 
+    public class Version1_2 : IDocumentUpgradeStep
+    {
+        public async Task Step(DocumentDbService dbService)
+        {
+            var problems = dbService.GetDocumentType<Problem>(DocumentType.Problem);
+            foreach(var problem in problems)
+            {
+                problem.TestCases = new List<Problem.TestCase>
+                {
+                    new Problem.TestCase
+                    {
+                        Input = problem.Input,
+                        Output = problem.Output
+                    }
+                };
+
+                await dbService.UpdateDocument(problem);
+            }
+        }
+
+        public Version Version => new Version(1, 2);
+    }
+
     public interface IDocumentUpgradeStep
     {
         Task Step(DocumentDbService dbService);

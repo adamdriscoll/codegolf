@@ -74,8 +74,15 @@ namespace CodeGolf.Controllers
             if (user.Id != problem.Author)
                 throw new Exception("User is not author!");
 
-            problem.Input = input;
-            problem.Output = output;
+            problem.TestCases = new List<Problem.TestCase>
+            {
+                new Problem.TestCase
+                {
+                    Input = input,
+                    Output = output
+                }
+            };
+            
             problem.Description = description;
             problem.Language = language;
             problem.Name = name;
@@ -92,7 +99,7 @@ namespace CodeGolf.Controllers
             if (problem == null)
                 throw new ArgumentNullException(nameof(problem));
 
-            if (string.IsNullOrEmpty(problem.Description) || string.IsNullOrWhiteSpace(problem.Name)  || string.IsNullOrWhiteSpace(problem.Output))
+            if (string.IsNullOrEmpty(problem.Description) || string.IsNullOrWhiteSpace(problem.Name)  || string.IsNullOrEmpty(problem.Output))
                 throw new Exception("All details are required to create a problem");
 
             var user = DocumentDbService.Client.CreateDocumentQuery<User>(DocumentDbService.DatabaseUri).Where(m => m.Identity == this.HttpContext.User.Identity.Name && m.Authentication == this.HttpContext.User.Identity.AuthenticationType).ToList().FirstOrDefault();
@@ -108,6 +115,15 @@ namespace CodeGolf.Controllers
             }
 
             problem.Author = user.Id;
+
+            problem.TestCases = new List<Problem.TestCase>
+            {
+                new Problem.TestCase
+                {
+                    Input = problem.Input,
+                    Output = problem.Output
+                }
+            };
 
             await DocumentDbService.CreateDocument(problem);
 

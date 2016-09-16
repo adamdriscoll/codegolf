@@ -24,11 +24,14 @@
 
 <p id="description"></p>
 
-<h3>Input</h3>
-<pre id="input">@Model.Input</pre>
+@foreach (var testCase in Model.TestCases)
+{
+    <h3>Input</h3>
+    <pre id="input">@testCase.Input</pre>
 
-<h3>Expected Output</h3>
-<pre id="output">@Model.Output</pre>
+    <h3>Expected Output</h3>
+    <pre id="output">@testCase.Output</pre>
+}
 
 <h3>Rounds</h3>
 <b>Click a round to see the solution.</b>
@@ -215,7 +218,7 @@ else
                                 Problem: "@Model.Id",
                                 Content: editor.getModel().getLinesContent().join('\n')
                             }, function(data) {
-                                if (data.succeeded) {
+                                if (data.passed) {
                                     $('#solutionStatusPassed').show();
                                     $('#solutionStatusFailed').hide();
                                 } else {    
@@ -223,7 +226,7 @@ else
                                     $('#solutionStatusPassed').hide();
                                 }
 
-                                $('#solutionOutput').html(data.output);
+                                $('#solutionOutput').html(data.testCaseResults[0].output);
 
                                 $('#solutionStatusRunning').hide();
                                 $('#testSolution').show();

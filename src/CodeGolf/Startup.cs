@@ -73,6 +73,8 @@ namespace CodeGolf
             }));
 
             ConfigureAzureFunctionService(services);
+            
+            services.AddTransient<ProblemValidatorService>();
         }
 
         public void ConfigureAzureFunctionService(IServiceCollection services)

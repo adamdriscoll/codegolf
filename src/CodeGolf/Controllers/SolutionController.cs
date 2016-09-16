@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IdentityModel.Tokens;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,11 +13,11 @@ namespace CodeGolf.Controllers
 {
     public class SolutionController : AuthorizedController
     {
-        private readonly AzureFunctionsService _azureFunctionsService;
+        private readonly ProblemValidatorService _problemValidatorService;
 
-        public SolutionController(DocumentDbService dbService, AzureFunctionsService azureFunctionsService) : base(dbService)
+        public SolutionController(DocumentDbService dbService, ProblemValidatorService problemValidatorService) : base(dbService)
         {
-            _azureFunctionsService = azureFunctionsService;
+            _problemValidatorService = problemValidatorService;
         }
 
         [HttpGet]
@@ -58,44 +59,12 @@ namespace CodeGolf.Controllers
         }
 
         [Authorize]
-        public async Task<SolutionValidationResult> ValidateAsync(Guid problem, string content)
+        public async Task<ValidationResult> ValidateAsync(Guid problem, string content)
         {
             var theProblem = DocumentDbService.GetDocument<Problem>(problem);
             var language = DocumentDbService.GetDocument<Language>(theProblem.Language, true);
 
-            var validation = new SolutionValidationResult();
-
-            //TODO: Clean this up
-            if (language.Name == "powershell")
-            {
-                string solutionContent = string.Empty;
-                if (string.IsNullOrWhiteSpace(theProblem.Input) ||
-                    theProblem.Input.Equals("None", StringComparison.OrdinalIgnoreCase) ||
-                    theProblem.Input.Equals("N\\A", StringComparison.OrdinalIgnoreCase) ||
-                    theProblem.Input.StartsWith("None", StringComparison.OrdinalIgnoreCase))
-                {
-                    
-                }
-                else
-                {
-                    solutionContent = theProblem.Input;
-                    solutionContent += Environment.NewLine;
-                }
-                
-                solutionContent += content;
-
-                var solutionId = Guid.NewGuid();
-
-                await _azureFunctionsService.WritePowerShellFunction("/" + solutionId + "/", solutionContent);
-                Thread.Sleep(500);
-                var output = await _azureFunctionsService.StartFunction(solutionId.ToString());
-                await _azureFunctionsService.DeleteFunction("/" + solutionId);
-
-                validation.Output = output;
-                validation.Succeeded = string.Equals(output.Trim(), theProblem.Output);
-            }
-
-            return validation;
+            return await _problemValidatorService.Validate(language.Name, theProblem, content);
         } 
 
         [Authorize]
