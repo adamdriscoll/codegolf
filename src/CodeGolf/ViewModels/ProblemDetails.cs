@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Linq;
 using System.Collections.Generic;
 using CodeGolf.Models;
 
@@ -20,8 +20,8 @@ namespace CodeGolf.ViewModels
         public string Id => _problem.Id.ToString();
         public string Name => _problem.Name;
         public string Description => _problem.Description;
-        public string[] Input => _problem.Input;
-        public string[] Output => _problem.Output;
+        public string Input => _problem.TestCases.ElementAt(0).Input;
+        public string Output => _problem.TestCases.ElementAt(0).Output;
         public string Author { get; set; }
         public string AuthorId { get; set; }
 
