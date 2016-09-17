@@ -80,7 +80,7 @@ namespace CodeGolf.Services
             await dbService.CreateDocument(new Language { Name = "vb", DisplayName = "Visual Basic" });
         }
 
-        public Version Version => new Version(1, 1);
+        public Version Version => new Version(1, 0);
     }
 
     public class Version1_1 : IDocumentUpgradeStep
