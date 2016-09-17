@@ -17,6 +17,7 @@ namespace CodeGolf.Services
             _steps = new List<IDocumentUpgradeStep>();
             _steps.Add(new Version1_0());
             _steps.Add(new Version1_1());
+            _steps.Add(new Version1_2());
         }
 
         public async Task Upgrade()

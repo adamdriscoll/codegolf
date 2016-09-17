@@ -20,8 +20,7 @@ namespace CodeGolf.ViewModels
         public string Id => _problem.Id.ToString();
         public string Name => _problem.Name;
         public string Description => _problem.Description;
-        public string Input => _problem.TestCases.ElementAt(0).Input;
-        public string Output => _problem.TestCases.ElementAt(0).Output;
+        public IEnumerable<Problem.TestCase> TestCases => _problem.TestCases;
         public string Author { get; set; }
         public string AuthorId { get; set; }
 

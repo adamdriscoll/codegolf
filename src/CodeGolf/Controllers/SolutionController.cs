@@ -92,7 +92,7 @@ namespace CodeGolf.Controllers
         }
 
         [Authorize]
-        public async Task Vote(Vote vote)
+        public async Task<int> Vote(Vote vote)
         {
             if (vote.Value != 1 && vote.Value != -1)
             {
@@ -124,6 +124,7 @@ namespace CodeGolf.Controllers
                 await DocumentDbService.UpdateDocument(solution);
             }
 
+            return solution.Votes;
         }
     }
 }

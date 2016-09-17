@@ -40,7 +40,7 @@ namespace CodeGolf.Controllers
                 solutionDetails.Add(svm);
             }
 
-            solutionDetails = solutionDetails.OrderBy(m => m.Passing != null && m.Passing.Value).ThenBy(m => m.Length).ToList();
+            solutionDetails = solutionDetails.OrderByDescending(m => m.Votes).ThenBy(m => m.Passing != null && m.Passing.Value).ThenBy(m => m.Length).ToList();
 
             return View(new ProblemDetails(problem, solutionDetails, author, language, HttpContext.User.Identity.IsAuthenticated,
                 HttpContext.User.Identity.Name));

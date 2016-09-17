@@ -160,9 +160,10 @@ else
                Item: id,
                Value: 1
            },
-           function() {
+           function(val) {
                    $('#upvote-' + id).css('font-weight', 'bold');
                    $('#downvote-' + id).css('font-weight', 'normal');
+                   $('#votes-' + id).html(val);
            });
     }
 
@@ -176,9 +177,10 @@ else
                Item: id,
                Value: -1
            },
-           function() {
+           function(val) {
                $('#upvote-' + id).css('font-weight', 'normal');
                $('#downvote-' + id).css('font-weight', 'bold');
+               $('#votes-' + id).html(val);
            });
     }
 
