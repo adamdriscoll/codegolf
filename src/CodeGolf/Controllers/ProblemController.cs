@@ -175,7 +175,7 @@ namespace CodeGolf.Controllers
         private IEnumerable<RecentProblem> SearchProblems(string critieria)
         {
             var problems = DocumentDbService.Client.CreateDocumentQuery<Problem>(DocumentDbService.DatabaseUri)
-                .Where(m => m.Type == DocumentType.Problem && (m.Name.Contains(critieria) || m.Description.Contains(critieria)))
+                .Where(m => m.Type == DocumentType.Problem && (m.Name.ToLower().Contains(critieria.ToLower()) || m.Description.ToLower().Contains(critieria.ToLower())))
                 .OrderByDescending(m => m.DateAdded)
                 .Take(10).ToList();
 
