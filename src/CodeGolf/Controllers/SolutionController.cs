@@ -1,11 +1,8 @@
 ﻿using System;
-using System.IdentityModel.Tokens;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using CodeGolf.Models;
 using CodeGolf.Services;
-using CodeGolf.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

@@ -154,7 +154,6 @@ namespace CodeGolf.Controllers
         [HttpGet]
         public IEnumerable<Problem> Popular()
         {
-            
             var list = DocumentDbService.Client.CreateDocumentQuery<Problem>(DocumentDbService.DatabaseUri)
                 .Where(m => m.Type == DocumentType.Problem && m.Solutions.Length > 5)
                 .OrderByDescending(m => m.DateAdded)

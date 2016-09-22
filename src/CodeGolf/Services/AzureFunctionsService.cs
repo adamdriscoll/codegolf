@@ -2,8 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Internal;
 using Newtonsoft.Json;
 
 namespace CodeGolf.Services
@@ -54,23 +57,36 @@ namespace CodeGolf.Services
 
         public async Task<string> StartFunction(string name)
         {
-            var uriBuilder = new UriBuilder(_executionUrl);
-            uriBuilder.Path += name;
+            try
+            {
+                var uriBuilder = new UriBuilder(_executionUrl);
+                uriBuilder.Path += name;
 
-            var client = new HttpClient();
-            return await client.GetStringAsync(uriBuilder.Uri);
+                var client = new HttpClient();
+                return await client.GetStringAsync(uriBuilder.Uri);
+            }
+            catch (Exception ex)
+            {
+                return $"ERROR: {ex.Message}";
+            }
         }
 
         public async Task DeleteFunction(string path)
         {
-            var uriBuilder = new UriBuilder(_url);
-            uriBuilder.Path = "api/vfs/site/wwwroot/" + path.Replace("\\", "/");
             var client = new HttpClient();
+            var request = new HttpRequestMessage
+            {
+                RequestUri = new Uri(_url + "/api/vfs/site/wwwroot/" + path.Replace("\\", "/") + "/?recursive=true"),
+                Method = HttpMethod.Delete,
+            };
 
+            request.Headers.IfMatch.Add(EntityTagHeaderValue.Any);
+            
             var byteArray = Encoding.ASCII.GetBytes(_username + ":" + _password);
-            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+            request.Headers.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
 
-            await client.DeleteAsync(uriBuilder.Uri);
+            var response = await client.SendAsync(request);
+            var data = response.Content.ReadAsStringAsync().Result;
         }
 
         public async Task WriteCSharpFunction(string path, string content)

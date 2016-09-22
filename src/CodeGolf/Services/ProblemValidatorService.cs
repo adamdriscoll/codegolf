@@ -74,7 +74,7 @@ namespace CodeGolf.Services
                 var output = await _azureFunctionsService.StartFunction(solutionId.ToString());
                 await _azureFunctionsService.DeleteFunction("/" + solutionId);
 
-                testCaseResults.Add(new TestCaseResult(testCase.Output, output));
+                testCaseResults.Add(new TestCaseResult(testCase.Output, output.Trim()));
             }
             
             return new ValidationResult(testCaseResults);
