@@ -132,6 +132,16 @@ namespace CodeGolf
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
+                    name: "Problem",
+                    template: "Problem/View/{problemName}",
+                    defaults: new
+                    {
+                        controller = "Problem",
+                        action = "Single",
+                    }
+                );
+
+                routes.MapRoute(
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });

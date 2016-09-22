@@ -18,14 +18,27 @@ namespace CodeGolf.Controllers
         {
         }
 
+        public IActionResult Single(string problemName)
+        {
+            var problem = DocumentDbService.Client.CreateDocumentQuery<Problem>(DocumentDbService.DatabaseUri)
+                .Where(m => m.Name.ToLower() == problemName.ToLower() && m.Type == DocumentType.Problem).ToList().FirstOrDefault();
+
+            return ShowProblem(problem);
+        }
+
         // GET: /<controller>/
         public IActionResult Index(Guid id)
         {
             var problem = DocumentDbService.GetDocument<Problem>(id);
+
+            return ShowProblem(problem);
+        }
+
+        private IActionResult ShowProblem(Problem problem)
+        {
+            if (problem == null) throw new Exception("Problem does not exist!");
             var author = DocumentDbService.GetDocument<User>(problem.Author);
             var language = DocumentDbService.GetDocument<Language>(problem.Language, true);
-
-            if (problem == null) throw new Exception("Problem does not exist!");
 
             var solutions = DocumentDbService.Client.CreateDocumentQuery<Solution>(DocumentDbService.DatabaseUri)
                 .Where(m => m.Type == DocumentType.Solution && problem.Solutions.Contains(m.Id));
@@ -42,7 +55,7 @@ namespace CodeGolf.Controllers
 
             solutionDetails = solutionDetails.OrderByDescending(m => m.Votes).ThenBy(m => m.Passing != null && m.Passing.Value).ThenBy(m => m.Length).ToList();
 
-            return View(new ProblemDetails(problem, solutionDetails, author, language, HttpContext.User.Identity.IsAuthenticated,
+            return View("Index", new ProblemDetails(problem, solutionDetails, author, language, HttpContext.User.Identity.IsAuthenticated,
                 HttpContext.User.Identity.Name));
         }
 
@@ -127,7 +140,7 @@ namespace CodeGolf.Controllers
 
             await DocumentDbService.CreateDocument(problem);
 
-            return Redirect("/Problem/Index/" + problem.Id);
+            return Redirect("/Problem/View/" + problem.Name);
         }
 
         [HttpGet]
