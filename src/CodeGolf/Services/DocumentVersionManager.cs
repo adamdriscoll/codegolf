@@ -18,6 +18,7 @@ namespace CodeGolf.Services
             _steps.Add(new Version1_0());
             _steps.Add(new Version1_1());
             _steps.Add(new Version1_2());
+            _steps.Add(new Version1_3());
         }
 
         public async Task Upgrade()
@@ -44,15 +45,16 @@ namespace CodeGolf.Services
                 await _dbService.CreateDocument(version);
             }
 
-            if (Version.Parse(version.Version) >= _steps.Max(m => m.Version))
-            {
-                return;
-            }
-
             foreach (var step in _steps)
             {
+                if (Version.Parse(version.Version) >= step.Version)
+                {
+                    continue;
+                }
+
                 await step.Step(_dbService);
                 version.Version = step.Version.ToString();
+
                 await _dbService.UpdateDocument(version);
             }
         }
@@ -122,6 +124,30 @@ namespace CodeGolf.Services
         }
 
         public Version Version => new Version(1, 2);
+    }
+
+    /// <summary>
+    /// Fixes an issue where we have 2 versions of each language.
+    /// </summary>
+    public class Version1_3 : IDocumentUpgradeStep
+    {
+        public async Task Step(DocumentDbService dbService)
+        {
+            var languages = dbService.GetDocumentType<Language>(DocumentType.Language);
+            foreach (var language in languages.OrderBy(m => m.DateAdded).GroupBy(m => m.Name))
+            {
+                var problems = dbService.GetDocumentType<Problem>(DocumentType.Problem);
+                foreach (var problem in problems.Where(m => m.Language == language.Last().Id))
+                {
+                    problem.Language = language.First().Id;
+                    await dbService.UpdateDocument(problem);
+                }
+
+                await dbService.DeleteDocument(language.Last().Id);
+            }
+        }
+
+        public Version Version => new Version(1, 3);
     }
 
     public interface IDocumentUpgradeStep
