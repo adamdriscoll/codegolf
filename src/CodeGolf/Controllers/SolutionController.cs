@@ -78,6 +78,7 @@ namespace CodeGolf.Controllers
 
             await DocumentDbService.CreateDocument(solution);
             var problem = DocumentDbService.GetDocument<Problem>(solution.Problem);
+
             var list = problem.Solutions.ToList();
             list.Add(solution.Id);
             problem.Solutions = list.ToArray();

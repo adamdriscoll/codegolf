@@ -1,4 +1,6 @@
-﻿@{
+﻿@using System.Threading.Tasks
+@using System.Web
+@{
     ViewData["Title"] = "Code Golf";
 }
 
@@ -15,7 +17,7 @@
     {
         <tr>
             <td><span class="label label-success">@item.Language</span></td>
-            <td><a href="~/problem/view/@item.Name">@item.Name</a></td>
+            <td><a href="~/problem/view/@HttpUtility.UrlEncode(item.Name)">@item.Name</a></td>
             <td><span class="badge">@item.Solutions</span></td>
         </tr>
     }
@@ -32,7 +34,7 @@
     {
         <tr>
             <td><span class="label label-success">@item.Language</span></td>
-            <td><a href="~/problem/view/@item.Problem">@item.Problem</a></td>
+            <td><a href="~/problem/view/@HttpUtility.UrlEncode(item.Problem)">@item.Problem</a></td>
             <td><span class="badge">@item.Length</span></td>
         </tr>
     }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web;
 using CodeGolf.Models;
 using CodeGolf.Services;
 using CodeGolf.ViewModels;
@@ -20,6 +21,8 @@ namespace CodeGolf.Controllers
 
         public IActionResult Single(string problemName)
         {
+            problemName = HttpUtility.UrlDecode(problemName);
+
             var problem = DocumentDbService.Client.CreateDocumentQuery<Problem>(DocumentDbService.DatabaseUri)
                 .Where(m => m.Name.ToLower() == problemName.ToLower() && m.Type == DocumentType.Problem).ToList().FirstOrDefault();
 
@@ -139,8 +142,8 @@ namespace CodeGolf.Controllers
             };
 
             await DocumentDbService.CreateDocument(problem);
-
-            return Redirect("/Problem/View/" + problem.Name);
+             
+            return Redirect("/Problem/View/" + HttpUtility.UrlEncode(problem.Name));
         }
 
         [HttpGet]

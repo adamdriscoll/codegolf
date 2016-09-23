@@ -8,7 +8,7 @@ namespace CodeGolf.Services
 {
     public class DocumentVersionManager
     {
-        private DocumentDbService _dbService;
+        private readonly DocumentDbService _dbService;
         private readonly List<IDocumentUpgradeStep> _steps;
 
         public DocumentVersionManager(DocumentDbService dbService)
@@ -19,6 +19,7 @@ namespace CodeGolf.Services
             _steps.Add(new Version1_1());
             _steps.Add(new Version1_2());
             _steps.Add(new Version1_3());
+            _steps.Add(new Version1_4());
         }
 
         public async Task Upgrade()
@@ -148,6 +149,24 @@ namespace CodeGolf.Services
         }
 
         public Version Version => new Version(1, 3);
+    }
+
+    public class Version1_4 : IDocumentUpgradeStep
+    {
+        public async Task Step(DocumentDbService dbService)
+        {
+            var language = dbService.Client.CreateDocumentQuery<Language>(dbService.DatabaseUri)
+                .Where(m => m.Type == DocumentType.Language && m.Name == "csharp")
+                .ToList().FirstOrDefault();
+
+            if (language == null)
+                throw new Exception("CSharp language not found!");
+
+            language.SupportsValidation = true;
+            await dbService.UpdateDocument(language);
+        }
+
+        public Version Version => new Version(1, 4);
     }
 
     public interface IDocumentUpgradeStep

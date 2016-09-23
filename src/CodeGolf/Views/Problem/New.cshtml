@@ -34,6 +34,12 @@
         <small>Define outputs to your problem.</small>
         <div id="output" style="width: 800px; height: 200px; border: 1px solid grey"></div>
     </div>
+    <div class="form-group">
+        <input type="checkbox" name="EnforceOutput" id="EnforceOutput" value="true"/> <label for="EnforceOutput">Enforce Output</label>
+        <input type="hidden" value="false" name="EnforceOutput" />
+        <br/>
+        <small>Require solutions to match output before they can be submitted.</small>
+    </div>
     <input class="btn btn-default" type="Submit" value="Submit">
     <input type="hidden" id="descriptionInput" name="description"/>
     <input type="hidden" id="inputInput" name="input"/>

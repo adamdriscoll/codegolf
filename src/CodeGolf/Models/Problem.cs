@@ -21,6 +21,7 @@ namespace CodeGolf.Models
         public Guid Language { get; set; }
         public Guid Author { get; set; }
         public override DocumentType Type => DocumentType.Problem;
+        public bool EnforceOutput { get; set; }
 
         public class TestCase
         {

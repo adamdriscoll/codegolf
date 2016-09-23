@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
 using Newtonsoft.Json;
 
 namespace CodeGolf.Services
@@ -93,12 +90,40 @@ namespace CodeGolf.Services
         {
             var body = $@"
                 using System.Net;
-                public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceWriter log)
-                {{
-                    dynamic input = await req.Content.ReadAsAsync<object>();
-                    {content}
-                    return req.CreateResponse(HttpStatusCode.OK, output);
-                }}
+using System.Threading.Tasks;
+using System.Text;
+
+public class Solution {{
+    private StringBuilder sb;
+    public Solution()
+    {{
+        sb = new StringBuilder();
+    }}
+
+    private void o(string text)
+    {{
+        sb.AppendLine(text);
+    }}
+
+    public void Run()
+    {{
+        {content}
+    }}
+
+    public override string ToString()
+    {{
+        return sb.ToString();
+    }}
+}}
+
+public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceWriter log)
+{{
+    var solution = new Solution();
+    solution.Run();
+
+    return req.CreateResponse(HttpStatusCode.OK, solution.ToString());
+}}
+
             ";
 
             var uriBuilder = new UriBuilder(_url);
@@ -106,7 +131,7 @@ namespace CodeGolf.Services
             var client = new HttpClient();
 
             var byteArray = Encoding.ASCII.GetBytes(_username + ":" + _password);
-            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
 
             await client.PutAsync(uriBuilder.Uri, new StringContent(body));
             await WriteFunctionJson(path);
