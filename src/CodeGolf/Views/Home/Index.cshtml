@@ -20,7 +20,7 @@
     {
         <tr>
             <td><span class="label label-success">@item.Language</span></td>
-            <td><a href="/problem/view/@HttpUtility.UrlEncode(item.Name)">@item.Name</a></td>
+            <td><a href="/problem/view/@HttpUtility.UrlPathEncode(item.Name)">@item.Name</a></td>
             <td><a href="~/Profile/Get/@item.AuthorId"><i class="fa fa-github fa-lg"></i>  @item.Author</a></td>
             <td><span class="badge">@item.SolutionCount </span></td>
             <td><span class="badge">@item.ShortestSolution </span></td>
@@ -43,7 +43,7 @@
     {
         <tr>
             <td><span class="label label-success">@item.Language</span></td>
-            <td><a href="/problem/index/@item.Id">@item.Name</a></td>
+            <td><a href="/problem/index/@HttpUtility.UrlPathEncode(item.Name)">@item.Name</a></td>
             <td><a href="~/Profile/Get/@item.AuthorId"><i class="fa fa-github fa-lg"></i>  @item.Author</a></td>
             <td><span class="badge">@item.SolutionCount </span></td>
             <td><span class="badge">@item.ShortestSolution </span></td>

@@ -21,8 +21,6 @@ namespace CodeGolf.Controllers
 
         public IActionResult Single(string problemName)
         {
-            problemName = HttpUtility.UrlDecode(problemName);
-
             var problem = DocumentDbService.Client.CreateDocumentQuery<Problem>(DocumentDbService.DatabaseUri)
                 .Where(m => m.Name.ToLower() == problemName.ToLower() && m.Type == DocumentType.Problem).ToList().FirstOrDefault();
 
@@ -143,7 +141,7 @@ namespace CodeGolf.Controllers
 
             await DocumentDbService.CreateDocument(problem);
              
-            return Redirect("/Problem/View/" + HttpUtility.UrlEncode(problem.Name));
+            return Redirect("/Problem/View/" + HttpUtility.UrlPathEncode(problem.Name));
         }
 
         [HttpGet]

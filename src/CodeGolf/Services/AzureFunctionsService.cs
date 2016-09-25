@@ -92,6 +92,7 @@ namespace CodeGolf.Services
                 using System.Net;
 using System.Threading.Tasks;
 using System.Text;
+using System.Linq;
 
 public class Solution {{
     private StringBuilder sb;
