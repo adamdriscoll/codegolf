@@ -85,6 +85,9 @@ namespace CodeGolf
             var executionUrl = Configuration.GetValue<string>("AzureFunctionApi:ExecutionUrl");
 
             services.AddTransient(x => new AzureFunctionsService(url, username, password, executionUrl));
+
+            var service = new AzureFunctionsService(url, username, password, executionUrl);
+            //service.UploadZip("https://github.com/pester/Pester/archive/3.4.3.zip", "pester").Wait();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -93,7 +96,7 @@ namespace CodeGolf
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
-            app.UseApplicationInsightsRequestTelemetry();
+            //app.UseApplicationInsightsRequestTelemetry();
 
             if (env.IsDevelopment())
             {

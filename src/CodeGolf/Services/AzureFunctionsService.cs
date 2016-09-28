@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -66,6 +68,22 @@ namespace CodeGolf.Services
             {
                 return $"ERROR: {ex.Message}";
             }
+        }
+
+        public async Task UploadZip(string url, string name)
+        {
+            var client = new HttpClient();
+
+            var byteArray = Encoding.ASCII.GetBytes(_username + ":" + _password);
+            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+
+            var uriBuilder = new UriBuilder(_url);
+            uriBuilder.Path = $"api/zip/";
+
+            WebClient wc = new WebClient();
+            var data = wc.DownloadData(new Uri(url));
+
+            var result = await client.PutAsync(uriBuilder.Uri, new ByteArrayContent(data));
         }
 
         public async Task DeleteFunction(string path)
