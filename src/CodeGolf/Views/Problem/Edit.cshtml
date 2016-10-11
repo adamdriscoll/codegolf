@@ -45,6 +45,9 @@
 <script>
     $(document)
         .ready(function () {
+            $("#designNav").addClass("active");
+            $("#holesNav").removeClass("active");
+
             var description, input, output;
             require.config({ paths: { 'vs': '../../node_modules/monaco-editor/min/vs' } });
             require(['vs/editor/editor.main'],

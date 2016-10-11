@@ -86,7 +86,7 @@ namespace CodeGolf
 
             services.AddTransient(x => new AzureFunctionsService(url, username, password, executionUrl));
 
-            var service = new AzureFunctionsService(url, username, password, executionUrl);
+            //var service = new AzureFunctionsService(url, username, password, executionUrl);
             //service.UploadZip("https://github.com/pester/Pester/archive/3.4.3.zip", "pester").Wait();
         }
 
