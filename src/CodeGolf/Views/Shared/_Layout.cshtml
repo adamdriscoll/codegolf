@@ -25,7 +25,6 @@
         <script src="~/lib/jquery/dist/jquery.js"></script>
         <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
         <script src="~/js/site.js" asp-append-version="true"></script>
-        <script src="~/node_modules/monaco-editor/min/vs/loader.js"></script>
     </environment>
     <environment names="Staging,Production">
         <script src="/lib/showdown/dist/showdown.min.js"></script>
@@ -38,14 +37,9 @@
         <script src="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.6/bootstrap.min.js"
                 asp-fallback-src="~/lib/bootstrap/dist/js/bootstrap.min.js"
                 asp-fallback-test="window.jQuery && window.jQuery.fn && window.jQuery.fn.modal">
-
-        
         </script>
         <script src="~/js/site.min.js" asp-append-version="true"></script>
-        <script src="~/node_modules/monaco-editor/min/vs/loader.js"></script>
     </environment>
-
-    @Html.ApplicationInsightsJavaScript(TelemetryConfiguration)
 </head>
 <body>
 
@@ -88,44 +82,39 @@
         </div>
     </nav>
 
-
-
 <div class="container body-content">
     @RenderBody()
 </div>
 
-
-
-
 @RenderSection("scripts", required: false)
 
-    <environment names="Staging,Production">
-
-        <div class="text-center">
-            <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-            <!-- Header -->
-            <ins class="adsbygoogle"
-                 style="display: block"
-                 data-ad-client="ca-pub-5579528543450650"
-                 data-ad-slot="7848905214"
-                 data-ad-format="auto"></ins>
-            <script>
-                (adsbygoogle = window.adsbygoogle || []).push({});
-            </script>
-        </div>
-
+<environment names="Staging,Production">
+    <div class="text-center">
+        <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+        <!-- Header -->
+        <ins class="adsbygoogle"
+             style="display: block"
+             data-ad-client="ca-pub-5579528543450650"
+             data-ad-slot="7848905214"
+             data-ad-format="auto"></ins>
         <script>
-            (function (i, s, o, g, r, a, m) {
-                i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
-                    (i[r].q = i[r].q || []).push(arguments)
-                }, i[r].l = 1 * new Date(); a = s.createElement(o),
-                m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
-            })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
-
-            ga('create', 'UA-8902901-4', 'auto');
-            ga('send', 'pageview');
-
+            (adsbygoogle = window.adsbygoogle || []).push({});
         </script>
-    </environment>
+    </div>
+
+    <script>
+        (function (i, s, o, g, r, a, m) {
+            i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+                (i[r].q = i[r].q || []).push(arguments)
+            }, i[r].l = 1 * new Date(); a = s.createElement(o),
+                m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
+
+        ga('create', 'UA-8902901-4', 'auto');
+        ga('send', 'pageview');
+
+    </script>
+</environment>
+
 </body>
 </html>

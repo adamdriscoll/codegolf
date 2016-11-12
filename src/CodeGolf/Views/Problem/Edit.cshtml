@@ -41,54 +41,60 @@
     <input type="hidden" name="id" value="@Model.Problem.Id" />
 
 </form>
+@section scripts {
+    <script src="~/lib/monaco-editor/loader.js"></script>
 
-<script>
-    $(document)
-        .ready(function () {
-            $("#designNav").addClass("active");
-            $("#holesNav").removeClass("active");
+    <script>
+        $(document)
+            .ready(function() {
+                $("#designNav").addClass("active");
+                $("#holesNav").removeClass("active");
 
-            var description, input, output;
-            require.config({ paths: { 'vs': '../../node_modules/monaco-editor/min/vs' } });
-            require(['vs/editor/editor.main'],
-                function() {
-                    description = monaco.editor.create(document.getElementById('description'),
-                    {
-                        value: '@Model.Problem.Description',
-                        language: 'markdown'
+                var description, input, output;
+                require.config({ paths: { 'vs': '/lib/monaco-editor' } });
+                require(['vs/editor/editor.main'],
+                    function() {
+                        description = monaco.editor.create(document.getElementById('description'),
+                        {
+                            value: '@Model.Problem.Description',
+                            language: 'markdown'
+                        });
+
+                        input = monaco.editor.create(document.getElementById('input'),
+                        {
+                            value: '@Model.Problem.Input',
+                            language: 'markdown'
+                        });
+
+                        output = monaco.editor.create(document.getElementById('output'),
+                        {
+                            value: '@Model.Problem.Output',
+                            language: 'markdown'
+                        });
+
+                        $('#outputInput').val('@Model.Problem.Output');
+                        $('#inputInput').val('@Model.Problem.Input');
+                        $('#descriptionInput').val('@Model.Problem.Description');
+                        $('#language').val('@Model.Problem.Language');
+
+                        output.getModel()
+                            .onDidChangeContent(function(data) {
+                                var content = output.getModel().getLinesContent().join('\n');
+                                $('#outputInput').val(content);
+                            });
+
+                        input.getModel()
+                            .onDidChangeContent(function(data) {
+                                var content = input.getModel().getLinesContent().join('\n');
+                                $('#inputInput').val(content);
+                            });
+
+                        description.getModel()
+                            .onDidChangeContent(function(data) {
+                                var content = description.getModel().getLinesContent().join('\n');
+                                $('#descriptionInput').val(content);
+                            });
                     });
-
-                    input = monaco.editor.create(document.getElementById('input'),
-                    {
-                        value: '@Model.Problem.Input',
-                        language: 'markdown'
-                    });
-
-                    output = monaco.editor.create(document.getElementById('output'),
-                    {
-                        value: '@Model.Problem.Output',
-                        language: 'markdown'
-                    });
-
-                    $('#outputInput').val('@Model.Problem.Output');
-                    $('#inputInput').val('@Model.Problem.Input');
-                    $('#descriptionInput').val('@Model.Problem.Description');
-                    $('#language').val('@Model.Problem.Language');
-
-                    output.getModel().onDidChangeContent(function (data) {
-                        var content = output.getModel().getLinesContent().join('\n');
-                        $('#outputInput').val(content);
-                    });
-
-                    input.getModel().onDidChangeContent(function (data) {
-                        var content = input.getModel().getLinesContent().join('\n');
-                        $('#inputInput').val(content);
-                    });
-
-                    description.getModel().onDidChangeContent(function (data) {
-                        var content = description.getModel().getLinesContent().join('\n');
-                        $('#descriptionInput').val(content);
-                    });
-                });
-        });
-</script>
+            });
+    </script>
+}

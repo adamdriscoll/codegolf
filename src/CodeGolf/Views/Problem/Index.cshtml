@@ -118,121 +118,125 @@ else
     <span><h2>Login to play!</h2></span>
 }
 
+@section scripts {
+    <script src="~/lib/monaco-editor/loader.js"></script>
 
-<script>
-    function CreateEditor(id) {
-        $('#' + id + 'container').toggle();
-        if ($('#' + id + 'container').data('editor') !== 'true') {
-            require.config({ paths: { 'vs': '../../node_modules/monaco-editor/min/vs' } });
-            require(['vs/editor/editor.main'],
-            function () {
-                $.get('/Solution/Get/' + id,
-                    function(data) {
-                        monaco.editor.create(document.getElementById(id),
+    <script>
+        function CreateEditor(id) {
+            $('#' + id + 'container').toggle();
+            if ($('#' + id + 'container').data('editor') !== 'true') {
+                require.config({ paths: { 'vs': '/lib/monaco-editor/' } });
+                require(['vs/editor/editor.main'],
+                    function() {
+                        $.get('/Solution/Get/' + id,
+                            function(data) {
+                                monaco.editor.create(document.getElementById(id),
+                                {
+                                    value: data.content,
+                                    language: '@Model.Language.Name',
+                                    readOnly: true
+                                });
+                            });
+                    });
+
+                $('#' + id + 'container').data('editor', 'true');
+            }
+        }
+
+        function Upvote(id) {
+            if ($('#upvote-' + id).css('font-weight') === 'bold') {
+                return;
+            }
+
+            $.post('/Solution/Vote/',
+                {
+                    Item: id,
+                    Value: 1
+                },
+                function(val) {
+                    $('#upvote-' + id).css('font-weight', 'bold');
+                    $('#downvote-' + id).css('font-weight', 'normal');
+                    $('#votes-' + id).html(val);
+                });
+        }
+
+        function Downvote(id) {
+            if ($('#downvote-' + id).css('font-weight') === 'bold') {
+                return;
+            }
+
+            $.post('/Solution/Vote/',
+                {
+                    Item: id,
+                    Value: -1
+                },
+                function(val) {
+                    $('#upvote-' + id).css('font-weight', 'normal');
+                    $('#downvote-' + id).css('font-weight', 'bold');
+                    $('#votes-' + id).html(val);
+                });
+        }
+
+        $(document)
+            .ready(function() {
+                var converter = new showdown.Converter();
+                var html = converter.makeHtml('@Model.Description'.replace('&#xA;', '\n'));
+                $('#description').html(html);
+
+                require.config({ paths: { 'vs': '/lib/monaco-editor/' } });
+                require(['vs/editor/editor.main'],
+                    function() {
+                        var editor = monaco.editor.create(document.getElementById('container'),
                         {
-                            value: data.content,
-                            language: '@Model.Language.Name',
-                            readOnly: true
+                            value: '@Html.Raw(Model.SolutionHelp)',
+                            language: '@Model.Language.Name'
                         });
+
+                        editor.getModel()
+                            .onDidChangeContent(function(data) {
+                                var content = editor.getModel().getLinesContent().join('\n');
+                                $('#solutionStrokes').html(content.length);
+                                $('#Content').val(content);
+
+                                @if (Model.EnforceOutput)
+                                {
+                                    @: document.getElementById("submitSolution").disabled = true;
+                                }
+                            });
+
+
+                        $('#testSolution')
+                            .click(function() {
+                                $('#testSolution').hide();
+                                $('#solutionStatusPassed').hide();
+                                $('#solutionStatusFailed').hide();
+                                $('#solutionStatusUnknown').hide();
+
+                                $('#solutionStatusRunning').show();
+                                $.post("/Solution/ValidateAsync",
+                                {
+                                    Problem: "@Model.Id",
+                                        Content: editor.getModel().getLinesContent().join('\n')
+                                    },
+                                    function(data) {
+                                        if (data.passed) {
+                                            $('#solutionStatusPassed').show();
+                                            $('#solutionStatusFailed').hide();
+
+                                            document.getElementById("submitSolution").disabled = false;
+                                        } else {
+                                            $('#solutionStatusFailed').show();
+                                            $('#solutionStatusPassed').hide();
+                                        }
+
+                                        $('#solutionOutput').html(data.testCaseResults[0].actualOutput);
+
+                                        $('#solutionStatusRunning').hide();
+                                        $('#testSolution').show();
+                                    });
+                            });
+
                     });
             });
-
-            $('#' + id + 'container').data('editor', 'true');
-        }
-    }
-
-    function Upvote(id) {
-        if ($('#upvote-' + id).css('font-weight') === 'bold') {
-            return;
-        }
-
-        $.post('/Solution/Vote/',
-           {
-               Item: id,
-               Value: 1
-           },
-           function(val) {
-                   $('#upvote-' + id).css('font-weight', 'bold');
-                   $('#downvote-' + id).css('font-weight', 'normal');
-                   $('#votes-' + id).html(val);
-           });
-    }
-
-    function Downvote(id) {
-        if ($('#downvote-' + id).css('font-weight') === 'bold') {
-            return;
-        }
-
-        $.post('/Solution/Vote/',
-           {
-               Item: id,
-               Value: -1
-           },
-           function(val) {
-               $('#upvote-' + id).css('font-weight', 'normal');
-               $('#downvote-' + id).css('font-weight', 'bold');
-               $('#votes-' + id).html(val);
-           });
-    }
-
-    $(document)
-        .ready(function () {
-            var converter = new showdown.Converter();
-            var html = converter.makeHtml('@Model.Description'.replace('&#xA;', '\n'));
-            $('#description').html(html);
-
-            require.config({ paths: { 'vs': '../../node_modules/monaco-editor/min/vs' } });
-            require(['vs/editor/editor.main'],
-                function() {
-                    var editor = monaco.editor.create(document.getElementById('container'),
-                    {
-                        value: '@Html.Raw(Model.SolutionHelp)',
-                        language: '@Model.Language.Name'
-                    });
-
-                    editor.getModel()
-                        .onDidChangeContent(function(data) {
-                            var content = editor.getModel().getLinesContent().join('\n');
-                            $('#solutionStrokes').html(content.length);
-                            $('#Content').val(content);
-
-                            @if(Model.EnforceOutput)
-                            {
-                                @: document.getElementById("submitSolution").disabled = true;
-                            }
-                        });
-
-
-                    $('#testSolution')
-                        .click(function () {
-                            $('#testSolution').hide();
-                            $('#solutionStatusPassed').hide();
-                            $('#solutionStatusFailed').hide();
-                            $('#solutionStatusUnknown').hide();
-
-                            $('#solutionStatusRunning').show();
-                            $.post("/Solution/ValidateAsync",
-                            {
-                                Problem: "@Model.Id",
-                                Content: editor.getModel().getLinesContent().join('\n')
-                            }, function(data) {
-                                if (data.passed) {
-                                    $('#solutionStatusPassed').show();
-                                    $('#solutionStatusFailed').hide();
-
-                                    document.getElementById("submitSolution").disabled = false;
-                                } else {    
-                                    $('#solutionStatusFailed').show();
-                                    $('#solutionStatusPassed').hide();
-                                }
-
-                                $('#solutionOutput').html(data.testCaseResults[0].actualOutput);
-
-                                $('#solutionStatusRunning').hide();
-                                $('#testSolution').show();
-                            });
-                        });
-
-                });
-        });
-</script>
+    </script>
+}

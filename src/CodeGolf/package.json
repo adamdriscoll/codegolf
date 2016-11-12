@@ -11,6 +11,7 @@
     "lodash": "3.9.1"
   },
   "dependencies": {
-    "monaco-editor": "0.5.3"
+    "monaco-editor": "0.7.0",
+    "react": "15.3.2"
   }
 }
