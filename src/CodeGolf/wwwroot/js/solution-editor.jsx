@@ -15,6 +15,10 @@
     }
 
     testSolution() {
+        if (this.state.validationState === "running") {
+            return;
+        }
+
         this.state.validationState = "running";
         this.setState(this.state);
         var self = this;
