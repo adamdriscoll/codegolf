@@ -41,8 +41,13 @@ namespace CodeGolf.Controllers
             var author = DocumentDbService.GetDocument<User>(problem.Author);
             var language = DocumentDbService.GetDocument<Language>(problem.Language, true);
 
-            var solutions = DocumentDbService.Client.CreateDocumentQuery<Solution>(DocumentDbService.DatabaseUri)
-                .Where(m => m.Type == DocumentType.Solution && problem.Solutions.Contains(m.Id));
+            return View("Index", new ProblemDetails(problem, author, language, HttpContext.User.Identity.IsAuthenticated,
+                HttpContext.User.Identity.Name));
+        }
+
+        public IEnumerable<SolutionDetail> Solution(Guid id)
+        {
+            var solutions = DocumentDbService.Client.CreateDocumentQuery<Solution>(DocumentDbService.DatabaseUri).Where(m => m.Type == DocumentType.Solution && m.Problem == id);
 
             var solutionDetails = new List<SolutionDetail>();
             foreach (var solution in solutions)
@@ -54,10 +59,7 @@ namespace CodeGolf.Controllers
                 solutionDetails.Add(svm);
             }
 
-            solutionDetails = solutionDetails.OrderByDescending(m => m.Votes).ThenBy(m => m.Passing != null && m.Passing.Value).ThenBy(m => m.Length).ToList();
-
-            return View("Index", new ProblemDetails(problem, solutionDetails, author, language, HttpContext.User.Identity.IsAuthenticated,
-                HttpContext.User.Identity.Name));
+            return solutionDetails.OrderByDescending(m => m.Votes).ThenBy(m => m.Passing != null && m.Passing.Value).ThenBy(m => m.Length).ToList();
         }
 
 

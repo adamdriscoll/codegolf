@@ -26,7 +26,7 @@
         var content = this.state.editor.getModel().getLinesContent().join('\n');
 
         if (this.props.onContentChanged) {
-            this.props.onCOntentChanged(content);
+            this.props.onContentChanged(content);
         }
     }
 
@@ -36,14 +36,14 @@
         require(["vs/editor/editor.main"],
             function () {
                 if (self.props.dataUrl) {
-                    loadData();
+                    self.loadData();
                 } else {
-                    createEditor(self.props.contents, self.props.langauge, self.props.readonly);
+                    self.createEditor(self.props.contents, self.props.langauge, self.props.readonly);
                 }
             });
     }
 
     render() {
-        return (<div ref={(domNode) => this.editorContainer = domNode}></div>);
+        return (<div ref={(domNode) => this.editorContainer = domNode} className="monaco-container"></div>);
     }
 }

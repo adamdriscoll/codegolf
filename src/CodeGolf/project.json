@@ -21,7 +21,8 @@
     "Microsoft.AspNetCore.Authentication.Cookies": "1.0.0",
     "Microsoft.Azure.DocumentDB": "1.9.5",
     "Microsoft.Azure.Management.Automation": "2.0.1",
-    "Microsoft.IdentityModel.Clients.ActiveDirectory": "3.13.4"
+    "Microsoft.IdentityModel.Clients.ActiveDirectory": "3.13.4",
+    "React.AspNet": "3.0.0"
   },
 
   "tools": {
