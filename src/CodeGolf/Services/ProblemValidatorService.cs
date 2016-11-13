@@ -69,7 +69,7 @@ namespace CodeGolf.Services
 
                 solutionContent += solution;
 
-                var solutionId = Guid.NewGuid();
+                var solutionId = Language + Guid.NewGuid();
                 await _azureFunctionsService.WriteCSharpFunction("/" + solutionId + "/", solutionContent);
                 Thread.Sleep(500);
                 var output = await _azureFunctionsService.StartFunction(solutionId.ToString());
@@ -118,7 +118,7 @@ namespace CodeGolf.Services
 
                 solutionContent += solution;
 
-                var solutionId = Guid.NewGuid();
+                var solutionId = Language + Guid.NewGuid();
                 await _azureFunctionsService.WritePowerShellFunction("/" + solutionId + "/", solutionContent);
                 Thread.Sleep(500);
                 var output = await _azureFunctionsService.StartFunction(solutionId.ToString());
