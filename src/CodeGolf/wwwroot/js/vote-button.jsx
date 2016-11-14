@@ -14,21 +14,6 @@
                 this.props.onVoted();
             }
         }
-
-        $.post(this.props.dataUrl,
-        {
-            item: this.props.itemId,
-            value: this.props.upvote ? 1 : -1
-        }, this.handleSuccessfulVote.bind(this));
-    }
-
-    handleSuccessfulVote() {
-        if (this.props.onVoted) {
-            this.props.onVoted();
-        }
-
-        this.state.voted = true;
-        this.setState(this.state);
     }
 
     render() {
@@ -45,7 +30,7 @@
         }
 
         return (<span>
-                    <a onclick={this.handleOnClick.bind(this)}>
+                    <a onClick={this.handleOnClick.bind(this)} href="#!">
                         <i className={iconClass} style={style}></i>
                     </a>
                 </span>);
@@ -58,8 +43,8 @@ class VoteButtons extends React.Component {
 
         this.state = {
             votes: 0,
-            upvoted: true,
-            downvoted: true
+            upvoted: false,
+            downvoted: false
         }
 
         if (props.votes) {
@@ -68,20 +53,20 @@ class VoteButtons extends React.Component {
     }
 
     handleUpVote() {
-        handleVote(1);
+        this.handleVote(this.props.upvoteUrl, true);
     }
 
     handleDownVote() {
-        handleVote(-1);
+        this.handleVote(this.props.downvoteUrl, false);
     }
 
-    handleVote(voteValue) {
+    handleVote(voteUrl, upvote) {
         var self = this;
-        $.post(this.props.dataUrl,
-            () => {
-                self.state.votes += voteValue;
-                self.state.upvoted = true;
-                self.state.downvoted = false;
+        $.post(voteUrl,
+            (votes) => {
+                self.state.votes = votes;
+                self.state.upvoted = upvote;
+                self.state.downvoted = !upvote;
                 self.setState(self.state);
             });
     }
@@ -91,13 +76,13 @@ class VoteButtons extends React.Component {
         const canDownvote = !this.state.downvoted;
 
         return (<div className="row">
-                    <div className="col-md-3">
+                    <div className="col-md-1">
                         <VoteButton upvote={true} onVoted={this.handleUpVote.bind(this)} canVote={canUpvote}/>
                     </div>
-                    <div className="col-md-3">
+                    <div className="col-md-1">
                         {this.state.votes}
                     </div>
-                    <div className="col-md-3">
+                    <div className="col-md-1">
                         <VoteButton upvote={false} onVoted={this.handleDownVote.bind(this)} canVote={canDownvote}/>
                     </div>
                 </div>);

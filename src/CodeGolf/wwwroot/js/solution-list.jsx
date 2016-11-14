@@ -2,7 +2,7 @@
     render() {
         var deleteLink = null;
 
-        if (this.props.isSolutionOwner) {
+        if (this.props.author.isCurrentUser) {
             deleteLink = <a href={this.props.deleteSolutionUrl}><i className="fa fa-trash-o fa-lg"></i></a>;
         }
 
@@ -11,22 +11,17 @@
             authIcon = <i className="fa fa-github fa-lg"></i>;
         }
 
-        return(<div>
+        return(
                     <tr>
                             <td>
-                                <VoteButtons />
+                                <VoteButtons upvoteUrl={this.props.upvoteUrl} downvoteUrl={this.props.downvoteUrl} votes={this.props.votes} />
                             </td>
-                            <td><a href={this.props.authorProfileUrl}>{authIcon} {this.props.author}</a></td>
+                            <td><a href={this.props.author.profileUrl}>{authIcon} {this.props.author.name}</a></td>
                             <td><span className="badge">{this.props.solutionLength}</span></td>
                             <td>{this.props.solutionDate}</td>
                             <td>{deleteLink}</td>
-                    </tr>
-                    //<tr style="display: none;" id="@(item.Id)container">
-                    //    <td colspan="5">
-                    //        <div id="@item.Id" style="height: 200px; border: 1px solid grey"></div>
-                    //    </td>
-                    //</tr>
-                </div>);
+                            <td></td>
+                    </tr>);
     }
 }
 
@@ -40,13 +35,14 @@ class SolutionTable extends React.Component {
     }
 
     renderSolution(solution) {
-        return <SolutionRow isSolutionOwner={solution.isSolutionOwner}
+        return <SolutionRow  
                              deleteSolutionUrl={solution.deleteSolutionUrl}
-                             authorAuthType={solution.authorAuthType}
-                             authorProfileUrl={solution.authorProfileUrl}
                              author={solution.author}
-                             solutionLength={solution.solutionLength}
-                             solutionDate={solution.solutionDate}/>;
+                             solutionLength={solution.length}
+                             solutionDate={solution.date}
+                             downvoteUrl={solution.downvoteUrl}
+                             upvoteUrl={solution.upvoteUrl}
+                             votes={solution.votes}/>;
     }
 
     componentWillMount() {
@@ -67,6 +63,7 @@ class SolutionTable extends React.Component {
                         <th>Player</th>
                         <th>Score</th>
                         <th>Date Played</th>
+                        <th></th>
                         <th></th>
                     </tr>
                     {solutionRows}

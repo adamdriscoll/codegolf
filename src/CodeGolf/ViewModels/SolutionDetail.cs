@@ -1,5 +1,7 @@
 ﻿using System;
 using CodeGolf.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Routing;
 
 namespace CodeGolf.ViewModels
 {
@@ -7,26 +9,53 @@ namespace CodeGolf.ViewModels
     {
         private readonly Solution _solution;
 
-        public SolutionDetail(Solution solution, User author)
+        public SolutionDetail(Solution solution, UserViewModel author, IUrlHelper urlHelper)
         {
             _solution = solution;
-            Author = author.Identity;
-            AuthorId = author.Id.ToString();
+            Author = author;
+
+            DeleteSolutionUrl = urlHelper.Action(new UrlActionContext
+            {
+                Action = "DeleteAsync",
+                Controller = "Solution",
+                Values = new {guid = solution.Id}
+            });
+
+            UpvoteUrl = urlHelper.Action(new UrlActionContext
+            {
+                Action = "Upvote",
+                Controller = "Solution",
+                Values = new
+                {
+                    itemId = Id
+                }
+            });
+
+            DownvoteUrl = urlHelper.Action(new UrlActionContext
+            {
+                Action = "Downvote",
+                Controller = "Solution",
+                Values = new
+                {
+                    itemId = Id
+                }
+            });
         }
 
         public string Content => _solution.Content;
         public Guid Id => _solution.Id;
         public int Length => _solution.Length;
-        public DateTime RoundPlayed => _solution.DateAdded;
+        public DateTime Date => _solution.DateAdded;
+
+        public string DeleteSolutionUrl { get; set; }
+
+        public string UpvoteUrl { get; set; }
+
+        public string DownvoteUrl { get; set; }
 
         public int Votes => _solution.Votes;
 
-        public string Author { get; set; }
-        public string AuthorId { get; set; }
-
-        public bool CanVote { get; set; }
-
-        public int VoteValue { get; set; }
+        public UserViewModel Author { get; set; }
 
         public bool? Passing => _solution.Passing;
     }

@@ -90,21 +90,36 @@ namespace CodeGolf.Controllers
         }
 
         [Authorize]
-        public async Task<int> Vote(Vote vote)
+        [Route("solution/{itemId}/upvote")]
+        public async Task<int> Upvote(Guid itemId, bool upvote)
         {
-            if (vote.Value != 1 && vote.Value != -1)
-            {
-                throw new Exception("Invalid vote value!");
-            }
+            return await Vote(itemId, true);
+        }
+
+        [Authorize]
+        [Route("solution/{itemId}/downvote")]
+        public async Task<int> Downvote(Guid itemId, bool upvote)
+        {
+            return await Vote(itemId, false);
+        }
+
+        
+        private async Task<int> Vote(Guid itemId, bool upvote)
+        {
+            var value = upvote ? 1 : -1;
 
             var user = await GetRequestUser();
 
-            var solution = DocumentDbService.GetDocument<Solution>(vote.Item);
+            var solution = DocumentDbService.GetDocument<Solution>(itemId);
 
             var castVote = DocumentDbService.GetDocumentType<Vote>(DocumentType.Vote)
-                .Where(m => m.Item == vote.Item && m.Voter == user.Id)
+                .Where(m => m.Item == itemId && m.Voter == user.Id)
                 .ToList()
                 .FirstOrDefault();
+
+            var vote = new Vote();
+            vote.Item = itemId;
+            vote.Value = value;
 
             if (castVote == null)
             {

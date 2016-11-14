@@ -81,10 +81,11 @@ class SolutionEditor extends React.Component {
     }
 
     submitSolution() {
+        var self = this;
         $.post(this.props.newSolutionUrl,
             { content: this.state.solutionContent, problem: this.props.problemId },
             function() {
-                window.location.href = this.props.problemUrl;
+                window.location.href = self.props.problemUrl;
             });
     }
 
