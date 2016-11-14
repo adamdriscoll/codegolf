@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CodeGolf.Models;
 using CodeGolf.Services;
+using CodeGolf.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -87,6 +88,20 @@ namespace CodeGolf.Controllers
             await DocumentDbService.Client.UpsertDocumentAsync(DocumentDbService.DatabaseUri, problem);
 
             return Redirect("/Problem/Index/" + problem.Id);
+        }
+
+        [Route("solution/{id}/content")]
+        public ContentViewModel Content(Guid id)
+        {
+            var solution = DocumentDbService.GetDocument<Solution>(id);
+            if (solution == null)
+                throw new Exception("Solution not found!");
+
+            return new ContentViewModel
+            {
+                Content = solution.Content,
+                //TODO: Langauge = solution.Language.Name
+            };
         }
 
         [Authorize]

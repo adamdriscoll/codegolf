@@ -25,6 +25,8 @@
 }, clientOnly: true)
 
 @section scripts {
+    <script language="javascript" src="~/lib/moment/moment.min.js"></script>
+    <script language="javascript" src="~/lib/highlight.js/lib/highlight.js"></script>
     <script language="javascript" src="~/lib/react/react.min.js"></script>
     <script language="javascript" src="~/lib/react-dom/react-dom.min.js"></script>
     <script language="javascript" src="~/lib/monaco-editor/loader.js"></script>
@@ -36,4 +38,8 @@
     <script language="javascript" src="~/js/problem.jsx"></script>
     
     @Html.ReactInitJavaScript(true)
+}
+
+@section css {
+    <link rel="stylesheet" href="~/lib/highlight.js/styles/default.css"/>
 }

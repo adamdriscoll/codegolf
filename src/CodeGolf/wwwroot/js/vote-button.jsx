@@ -68,6 +68,9 @@ class VoteButtons extends React.Component {
                 self.state.upvoted = upvote;
                 self.state.downvoted = !upvote;
                 self.setState(self.state);
+                if (self.props.onVote) {
+                    self.props.onVote(votes);
+                }
             });
     }
 
@@ -75,16 +78,18 @@ class VoteButtons extends React.Component {
         const canUpvote = !this.state.upvoted;
         const canDownvote = !this.state.downvoted;
 
-        return (<div className="row">
-                    <div className="col-md-1">
-                        <VoteButton upvote={true} onVoted={this.handleUpVote.bind(this)} canVote={canUpvote}/>
+        return (
+            <div>
+                <div className="row text-center">
+                    <VoteButton upvote={true} onVoted={this.handleUpVote.bind(this)} canVote={canUpvote} />
                     </div>
-                    <div className="col-md-1">
-                        {this.state.votes}
-                    </div>
-                    <div className="col-md-1">
-                        <VoteButton upvote={false} onVoted={this.handleDownVote.bind(this)} canVote={canDownvote}/>
-                    </div>
-                </div>);
+                <div className="row text-center">
+                    {this.state.votes}
+                </div>
+                <div className="row text-center">
+                    <VoteButton upvote={false} onVoted={this.handleDownVote.bind(this)} canVote={canDownvote} />
+                </div>
+            </div>
+                );
     }
 }

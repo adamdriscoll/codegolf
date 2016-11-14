@@ -43,7 +43,7 @@ class Problem extends React.Component {
         return (
         <div>
          <div className="row">
-            <div className="col-md-4">
+            <div className="col-md-12">
                 <h2>{this.props.name}</h2>
             </div>
          </div>
@@ -59,7 +59,6 @@ class Problem extends React.Component {
             <hr/>
             <ProblemDescription description={this.props.problemDescription} input={this.props.problemInput} output={this.props.problemOutput} />
             <h3>Rounds</h3>
-            <b>Click a round to see the solution.</b>
             <SolutionTable solutionDataUrl={this.props.solutionDataUrl} />
             <div className="row">
                 <div className="col-md-12">

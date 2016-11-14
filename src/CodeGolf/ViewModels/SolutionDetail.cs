@@ -40,9 +40,18 @@ namespace CodeGolf.ViewModels
                     itemId = Id
                 }
             });
+
+            ContentUrl = urlHelper.Action(new UrlActionContext
+            {
+                Action = "Content",
+                Controller = "Solution",
+                Values = new
+                {
+                    id = Id
+                }
+            });
         }
 
-        public string Content => _solution.Content;
         public Guid Id => _solution.Id;
         public int Length => _solution.Length;
         public DateTime Date => _solution.DateAdded;
@@ -52,6 +61,8 @@ namespace CodeGolf.ViewModels
         public string UpvoteUrl { get; set; }
 
         public string DownvoteUrl { get; set; }
+
+        public string ContentUrl { get; set; }
 
         public int Votes => _solution.Votes;
 

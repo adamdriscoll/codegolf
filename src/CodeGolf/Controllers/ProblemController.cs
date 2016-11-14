@@ -9,8 +9,6 @@ using CodeGolf.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-// For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
-
 namespace CodeGolf.Controllers
 {
     public class ProblemController : AuthorizedController
