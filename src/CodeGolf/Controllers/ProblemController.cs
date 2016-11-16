@@ -64,86 +64,67 @@ namespace CodeGolf.Controllers
         }
 
         [Authorize]
-        public IActionResult Edit(Guid id)
+        public async Task<IActionResult> Edit(Guid id)
         {
             var problem = DocumentDbService.GetDocument<Problem>(id);
+            var user = await GetRequestUser();
 
-            var editProblem = new EditProblem(problem, HttpContext.User.Identity.IsAuthenticated, HttpContext.User.Identity.Name);
-            editProblem.Languages = DocumentDbService.GetDocumentType<Language>(DocumentType.Language);
+            if (user.Id != problem.Author)
+                throw new Exception("User is not author!");
+
+            var editProblem = new EditProblem(id, HttpContext.User.Identity.IsAuthenticated, HttpContext.User.Identity.Name);
 
             return View(editProblem);
         }
 
         [Authorize]
-        public async Task<IActionResult> EditAsync(Guid id, string input, string output, string description, Guid language, string name)
+        [HttpPost]
+        [Route("/problem/{id}")]
+        public async Task<string> EditAsync(Guid id, Problem problem)
         {
-            var user = await GetRequestUser();
-
-            if (string.IsNullOrEmpty(output) || string.IsNullOrWhiteSpace(description) || string.IsNullOrWhiteSpace(name))
-                throw new Exception("All details are required to create a problem");
-
-            var problem = DocumentDbService.GetDocument<Problem>(id);
-
             if (problem == null)
                 throw new ArgumentNullException(nameof(problem));
 
-            if (user.Id != problem.Author)
+            if (string.IsNullOrEmpty(problem.Description) || string.IsNullOrWhiteSpace(problem.Name) || !problem.TestCases.Any())
+                throw new Exception("All details are required to create a problem");
+
+            var user = await GetRequestUser();
+
+            var existingProblem = DocumentDbService.GetDocument<Problem>(problem.Id);
+
+            if (existingProblem == null)
+                throw new ArgumentNullException(nameof(problem));
+
+            if (user.Id != existingProblem.Author)
                 throw new Exception("User is not author!");
 
-            problem.TestCases = new List<Problem.TestCase>
-            {
-                new Problem.TestCase
-                {
-                    Input = input,
-                    Output = output
-                }
-            };
-            
-            problem.Description = description;
-            problem.Language = language;
-            problem.Name = name;
+            existingProblem.TestCases = problem.TestCases;
+            existingProblem.Description = problem.Description;
+            existingProblem.Language = problem.Language;
+            existingProblem.Name = problem.Name;
 
-            await DocumentDbService.UpdateDocument(problem);
+            await DocumentDbService.UpdateDocument(existingProblem);
 
-            return Redirect("/Problem/Index/" + problem.Id);
+            return Url.Action("Index", new {problem.Id});
         }
 
 
         [Authorize]
-        public async Task<IActionResult> PostAsync(Problem problem)
+        [HttpPost]
+        [Route("/problem/")]
+        public async Task<string> PostAsync(Problem problem)
         {
             if (problem == null)
                 throw new ArgumentNullException(nameof(problem));
 
-            if (string.IsNullOrEmpty(problem.Description) || string.IsNullOrWhiteSpace(problem.Name)  || string.IsNullOrEmpty(problem.Output))
+            if (string.IsNullOrEmpty(problem.Description) || string.IsNullOrWhiteSpace(problem.Name)  || !problem.TestCases.Any())
                 throw new Exception("All details are required to create a problem");
 
-            var user = DocumentDbService.Client.CreateDocumentQuery<User>(DocumentDbService.DatabaseUri).Where(m => m.Identity == this.HttpContext.User.Identity.Name && m.Authentication == this.HttpContext.User.Identity.AuthenticationType).ToList().FirstOrDefault();
-            if (user == null)
-            {
-                user = new User
-                {
-                    Identity = this.HttpContext.User.Identity.Name,
-                    Authentication = this.HttpContext.User.Identity.AuthenticationType
-                };
-
-                await DocumentDbService.CreateDocument(user);
-            }
-
-            problem.Author = user.Id;
-
-            problem.TestCases = new List<Problem.TestCase>
-            {
-                new Problem.TestCase
-                {
-                    Input = problem.Input,
-                    Output = problem.Output
-                }
-            };
+            var currentUser = await GetRequestUser();
+            problem.Author = currentUser.Id;
 
             await DocumentDbService.CreateDocument(problem);
-             
-            return Redirect("/Problem/View/" + HttpUtility.UrlPathEncode(problem.Name));
+            return Url.Action("Single", "Problem", new {problemName = problem.Name});
         }
 
         [HttpGet]
@@ -159,10 +140,7 @@ namespace CodeGolf.Controllers
         public IActionResult New()
         {
             var user = GetRequestUser().Result;
-            var viewModel = new NewProblem(true, user.Identity)
-            {
-                Languages = DocumentDbService.Client.CreateDocumentQuery<Language>(DocumentDbService.DatabaseUri).Where(m => m.Type == DocumentType.Language).OrderBy(m => m.DisplayName)
-            };
+            var viewModel = new NewProblem(true, user.Identity);
            
             return View(viewModel);
         }

@@ -3,7 +3,8 @@
         super();
 
         this.state = {
-            editor: null
+            editor: null,
+            initialized: false
         }
     }
     loadData() {
@@ -19,6 +20,8 @@
             readOnly: readonly
         });
 
+        this.setState(this.state);
+
         this.state.editor.getModel().onDidChangeContent(this.handleOnContentChanged.bind(this));
     }
 
@@ -30,7 +33,30 @@
         }
     }
 
+    componentDidUpdate() {
+        if (this.state.initialized) {
+            return;
+        }
+
+        this.state.initialized = true;
+        this.setState(this.state);
+
+        const self = this;
+        require.config({ paths: { 'vs': "/lib/monaco-editor/" } });
+        require(["vs/editor/editor.main"],
+            function () {
+                self.createEditor(self.props.contents, self.props.language, self.props.readonly);
+            });
+    }
+
     componentDidMount() {
+        if (this.props.waitForContent && (this.props.contents == null || this.props.contents === "")) {
+            return;
+        }
+
+        this.state.initialized = true;
+        this.setState(this.state);
+
         const self = this;
         require.config({ paths: { 'vs': "/lib/monaco-editor/" } });
         require(["vs/editor/editor.main"],
@@ -38,7 +64,7 @@
                 if (self.props.dataUrl) {
                     self.loadData();
                 } else {
-                    self.createEditor(self.props.contents, self.props.langauge, self.props.readonly);
+                    self.createEditor(self.props.contents, self.props.language, self.props.readonly);
                 }
             });
     }

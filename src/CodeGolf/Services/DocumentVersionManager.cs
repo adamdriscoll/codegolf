@@ -137,6 +137,9 @@ namespace CodeGolf.Services
             var languages = dbService.GetDocumentType<Language>(DocumentType.Language);
             foreach (var language in languages.OrderBy(m => m.DateAdded).GroupBy(m => m.Name))
             {
+                //If we only have one language, don't delete anything
+                if (language.Count() == 1) continue;
+
                 var problems = dbService.GetDocumentType<Problem>(DocumentType.Problem);
                 foreach (var problem in problems.Where(m => m.Language == language.Last().Id))
                 {
