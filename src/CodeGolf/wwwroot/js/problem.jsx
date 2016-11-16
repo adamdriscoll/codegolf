@@ -1,9 +1,25 @@
 ﻿class ProblemDescription extends React.Component {
+    constructor() {
+        super();
+
+        this.state = {
+            descriptionHtml: ""
+        }
+    }
+
+    componentWillMount() {
+        var converter = new showdown.Converter();
+        var text = this.props.description;
+        var rawHtml = converter.makeHtml(text);
+        this.state.descriptionHtml = <div dangerouslySetInnerHTML={{ __html: rawHtml } }></div>;
+        this.setState(this.state);
+    }
+
     render() {
         return (
             <div>
                 <p>
-                    {this.props.description}
+                    {this.state.descriptionHtml}
                 </p>
 
                 <h3>Input</h3>
