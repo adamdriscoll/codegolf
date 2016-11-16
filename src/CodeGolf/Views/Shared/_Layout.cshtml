@@ -20,6 +20,8 @@
         <link rel="stylesheet" href="~/lib/font-awesome-4.6.3/css/font-awesome.min.css">
     </environment>
 
+    @RenderSection("css", required: false)
+
     <environment names="Development">
         <script src="/lib/showdown/dist/showdown.js"></script>
         <script src="~/lib/jquery/dist/jquery.js"></script>

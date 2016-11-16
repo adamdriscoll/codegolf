@@ -12,6 +12,9 @@
   },
   "dependencies": {
     "monaco-editor": "0.7.0",
-    "react": "15.3.2"
+    "react": "15.3.2",
+    "react-dom": "15.3.2",
+    "highlight.js": "9.8.0",
+    "moment":  "2.16.0" 
   }
 }

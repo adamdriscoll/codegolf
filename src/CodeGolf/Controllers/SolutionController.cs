@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CodeGolf.Models;
 using CodeGolf.Services;
+using CodeGolf.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -89,22 +90,51 @@ namespace CodeGolf.Controllers
             return Redirect("/Problem/Index/" + problem.Id);
         }
 
-        [Authorize]
-        public async Task<int> Vote(Vote vote)
+        [Route("solution/{id}/content")]
+        public ContentViewModel Content(Guid id)
         {
-            if (vote.Value != 1 && vote.Value != -1)
+            var solution = DocumentDbService.GetDocument<Solution>(id);
+            if (solution == null)
+                throw new Exception("Solution not found!");
+
+            return new ContentViewModel
             {
-                throw new Exception("Invalid vote value!");
-            }
+                Content = solution.Content,
+                //TODO: Langauge = solution.Language.Name
+            };
+        }
+
+        [Authorize]
+        [Route("solution/{itemId}/upvote")]
+        public async Task<int> Upvote(Guid itemId, bool upvote)
+        {
+            return await Vote(itemId, true);
+        }
+
+        [Authorize]
+        [Route("solution/{itemId}/downvote")]
+        public async Task<int> Downvote(Guid itemId, bool upvote)
+        {
+            return await Vote(itemId, false);
+        }
+
+        
+        private async Task<int> Vote(Guid itemId, bool upvote)
+        {
+            var value = upvote ? 1 : -1;
 
             var user = await GetRequestUser();
 
-            var solution = DocumentDbService.GetDocument<Solution>(vote.Item);
+            var solution = DocumentDbService.GetDocument<Solution>(itemId);
 
             var castVote = DocumentDbService.GetDocumentType<Vote>(DocumentType.Vote)
-                .Where(m => m.Item == vote.Item && m.Voter == user.Id)
+                .Where(m => m.Item == itemId && m.Voter == user.Id)
                 .ToList()
                 .FirstOrDefault();
+
+            var vote = new Vote();
+            vote.Item = itemId;
+            vote.Value = value;
 
             if (castVote == null)
             {

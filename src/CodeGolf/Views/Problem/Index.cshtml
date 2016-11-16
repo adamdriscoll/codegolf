@@ -1,242 +1,46 @@
-﻿@{
+﻿@model CodeGolf.ViewModels.ProblemDetails
+@{
     ViewData["Title"] = "Code Golf";
 }
 
-
-
-<div class="row">
-    <div class="col-md-4">
-        <h2> @Model.Name</h2>
-    </div>
-</div>
-<div class="row">
-    <div class="col-md-2">by <a href="~/Profile/Get/@Model.AuthorId"><i class="fa fa-github fa-lg"></i> @Model.Author</a></div>
-    <div class="col-md-1"><span class="label label-success">@Model.Language.DisplayName</span></div>
-    
-    @if (Model.Author == Model.Identity)
-    {
-        <div class="col-md-1"><a href="~/Problem/Edit/@Model.Id"><i class="fa fa-pencil-square-o fa-lg"></i> Edit</a></div>
-    }
-</div>
-
-<hr/>
-
-
-<p id="description"></p>
-
-@foreach (var testCase in Model.TestCases)
+@Html.React("Problem", new
 {
-    <h3>Input</h3>
-    <pre id="input">@testCase.Input</pre>
-
-    <h3>Expected Output</h3>
-    <pre id="output">@testCase.Output</pre>
-}
-
-<h3>Rounds</h3>
-<b>Click a round to see the solution.</b>
-<table class="table">
-    <tr>
-        <th>Crowd Appeal</th>
-        <th>Player</th>
-        <th>Score</th>
-        <th>Date Played</th>
-        <th></th>
-    </tr>
-    @foreach (var item in Model.Solutions)
-    {
-        <tr onclick="CreateEditor('@(item.Id)')">
-            <td>
-                <span><a onclick="Upvote('@item.Id')"><i class="fa fa-arrow-up fa-lg" id="upvote-@item.Id"></i></a></span>
-                <span id="votes-@item.Id">@item.Votes</span>
-                <span><a onclick="Downvote('@item.Id')"><i class="fa fa-arrow-down fa-lg" id="downvote-@item.Id"></i></a></span>
-            </td>
-            <td><a href="~/Profile/Get/@item.AuthorId"><i class="fa fa-github fa-lg"></i> @item.Author</a></td>
-            <td><span class="badge">@item.Length </span></td>
-            <td>@item.RoundPlayed</td>
-            <td>
-                @if (item.Author == Model.Identity)
-                {
-                    <a href="~/Solution/DeleteAsync?Guid=@item.Id"><i class="fa fa-trash-o fa-lg"></i></a>
-                }
-            </td>
-        </tr>
-        <tr style="display: none;" id="@(item.Id)container">
-            <td colspan="5">
-                <div id="@item.Id" style="height: 200px; border: 1px solid grey"></div>
-            </td>
-        </tr>
-    }
-
-</table>
-
-@if (@Model.Authenticated)
-{
-    <h3>Play a round</h3>
-    <hr />
-    <div style="padding-bottom: 10px" class="row">
-        <div class="col-md-2">
-            Strokes <span class="badge" id="solutionStrokes">0</span>
-        </div>
-
-        @if (Model.Language.SupportsValidation)
-        {
-            <div class="col-md-2">
-                <a id="testSolution"><i class="fa fa-play fa-lg"></i> Run</a>
-            </div>
-            <div class="col-md-2">
-                <i class="fa fa-question fa-lg" style="color: gray" id="solutionStatusUnknown"></i>
-                <i class="fa fa-circle-o-notch fa-spin" style="font-size: 24px; display: none;" id="solutionStatusRunning"></i>
-                <i class="fa fa-check fa-lg" style="color: green; display: none;" id="solutionStatusPassed"></i>
-                <i class="fa fa-times fa-lg" style="color: red; display: none;" id="solutionStatusFailed"></i>
-            </div>
-        }
-    </div>
-
-    if (Model.EnforceOutput)
-     {
-         <small>This problem requires that you match the output exactly.</small>
-     }
-
-    <div id="container" style="height: 200px; border: 1px solid grey"></div>
-
-    if (Model.Language.SupportsValidation)
-    {
-        <textarea id="solutionOutput" style="height: 200px; border: 1px solid grey; font-family: consolas; width: 100%; max-width: 100%" readonly></textarea>
-    }
-
-    <div style="padding: 20px">
-        <form action="/Solution/PostAsync">
-            <input type="hidden" value="" Id="Content" Name="Content"/>
-            <input type="hidden" Id="Problem" Name="Problem" Value="@Model.Id"/>
-            <input class="btn btn-default" type="submit" value="Submit" disabled="@Model.EnforceOutput" id="submitSolution">
-        </form>
-    </div>
-}
-else
-{
-    <span><h2>Login to play!</h2></span>
-}
+    isAuthor = Model.IsAuthor,
+    editProblemUrl = Url.Action("Edit", new { id = Model.Id }),
+    canAddSolution = Model.Authenticated,
+    problemId = Model.Id,
+    newSolutionUrl = Url.Action("PostAsync", "Solution"),
+    problemUrl = Url.Action("Single", new {id = Model.Id}),
+    languageSupportsValidation = Model.Language.SupportsValidation,
+    solutionValidationUrl = Url.Action("ValidateAsync", "Solution"),
+    enforceSolutionOutput = Model.EnforceOutput,
+    name = Model.Name,
+    authorAuthType = "github",
+    authorName = Model.Author,
+    authorProfileUrl = Url.Action("Get", "Profile", Model.AuthorId),
+    language = Model.Language.DisplayName,
+    problemDescription = Model.Description,
+    problemInput = Model.TestCases.FirstOrDefault().Input,
+    problemOutput = Model.TestCases.FirstOrDefault().Output,
+    solutionDataUrl = Url.Action("Solution", new {id = Model.Id})
+}, clientOnly: true)
 
 @section scripts {
-    <script src="~/lib/monaco-editor/loader.js"></script>
+    <script language="javascript" src="~/lib/moment/moment.min.js"></script>
+    <script language="javascript" src="~/lib/highlight.js/lib/highlight.js"></script>
+    <script language="javascript" src="~/lib/react/react.min.js"></script>
+    <script language="javascript" src="~/lib/react-dom/react-dom.min.js"></script>
+    <script language="javascript" src="~/lib/monaco-editor/loader.js"></script>
+    <script language="javascript" src="~/js/author-badge.jsx"></script>
+    <script language="javascript" src="~/js/monaco-editor.jsx"></script>
+    <script language="javascript" src="~/js/solution-editor.jsx"></script>
+    <script language="javascript" src="~/js/vote-button.jsx"></script>
+    <script language="javascript" src="~/js/solution-list.jsx"></script>
+    <script language="javascript" src="~/js/problem.jsx"></script>
+    
+    @Html.ReactInitJavaScript(true)
+}
 
-    <script>
-        function CreateEditor(id) {
-            $('#' + id + 'container').toggle();
-            if ($('#' + id + 'container').data('editor') !== 'true') {
-                require.config({ paths: { 'vs': '/lib/monaco-editor/' } });
-                require(['vs/editor/editor.main'],
-                    function() {
-                        $.get('/Solution/Get/' + id,
-                            function(data) {
-                                monaco.editor.create(document.getElementById(id),
-                                {
-                                    value: data.content,
-                                    language: '@Model.Language.Name',
-                                    readOnly: true
-                                });
-                            });
-                    });
-
-                $('#' + id + 'container').data('editor', 'true');
-            }
-        }
-
-        function Upvote(id) {
-            if ($('#upvote-' + id).css('font-weight') === 'bold') {
-                return;
-            }
-
-            $.post('/Solution/Vote/',
-                {
-                    Item: id,
-                    Value: 1
-                },
-                function(val) {
-                    $('#upvote-' + id).css('font-weight', 'bold');
-                    $('#downvote-' + id).css('font-weight', 'normal');
-                    $('#votes-' + id).html(val);
-                });
-        }
-
-        function Downvote(id) {
-            if ($('#downvote-' + id).css('font-weight') === 'bold') {
-                return;
-            }
-
-            $.post('/Solution/Vote/',
-                {
-                    Item: id,
-                    Value: -1
-                },
-                function(val) {
-                    $('#upvote-' + id).css('font-weight', 'normal');
-                    $('#downvote-' + id).css('font-weight', 'bold');
-                    $('#votes-' + id).html(val);
-                });
-        }
-
-        $(document)
-            .ready(function() {
-                var converter = new showdown.Converter();
-                var html = converter.makeHtml('@Model.Description'.replace('&#xA;', '\n'));
-                $('#description').html(html);
-
-                require.config({ paths: { 'vs': '/lib/monaco-editor/' } });
-                require(['vs/editor/editor.main'],
-                    function() {
-                        var editor = monaco.editor.create(document.getElementById('container'),
-                        {
-                            value: '@Html.Raw(Model.SolutionHelp)',
-                            language: '@Model.Language.Name'
-                        });
-
-                        editor.getModel()
-                            .onDidChangeContent(function(data) {
-                                var content = editor.getModel().getLinesContent().join('\n');
-                                $('#solutionStrokes').html(content.length);
-                                $('#Content').val(content);
-
-                                @if (Model.EnforceOutput)
-                                {
-                                    @: document.getElementById("submitSolution").disabled = true;
-                                }
-                            });
-
-
-                        $('#testSolution')
-                            .click(function() {
-                                $('#testSolution').hide();
-                                $('#solutionStatusPassed').hide();
-                                $('#solutionStatusFailed').hide();
-                                $('#solutionStatusUnknown').hide();
-
-                                $('#solutionStatusRunning').show();
-                                $.post("/Solution/ValidateAsync",
-                                {
-                                    Problem: "@Model.Id",
-                                        Content: editor.getModel().getLinesContent().join('\n')
-                                    },
-                                    function(data) {
-                                        if (data.passed) {
-                                            $('#solutionStatusPassed').show();
-                                            $('#solutionStatusFailed').hide();
-
-                                            document.getElementById("submitSolution").disabled = false;
-                                        } else {
-                                            $('#solutionStatusFailed').show();
-                                            $('#solutionStatusPassed').hide();
-                                        }
-
-                                        $('#solutionOutput').html(data.testCaseResults[0].actualOutput);
-
-                                        $('#solutionStatusRunning').hide();
-                                        $('#testSolution').show();
-                                    });
-                            });
-
-                    });
-            });
-    </script>
+@section css {
+    <link rel="stylesheet" href="~/lib/highlight.js/styles/default.css"/>
 }

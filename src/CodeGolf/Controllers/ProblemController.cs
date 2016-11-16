@@ -9,8 +9,6 @@ using CodeGolf.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-// For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
-
 namespace CodeGolf.Controllers
 {
     public class ProblemController : AuthorizedController
@@ -40,26 +38,30 @@ namespace CodeGolf.Controllers
             if (problem == null) throw new Exception("Problem does not exist!");
             var author = DocumentDbService.GetDocument<User>(problem.Author);
             var language = DocumentDbService.GetDocument<Language>(problem.Language, true);
+            
+            return View("Index", new ProblemDetails(problem, author, language, HttpContext.User.Identity.IsAuthenticated,
+                HttpContext.User.Identity.Name));
+        }
 
-            var solutions = DocumentDbService.Client.CreateDocumentQuery<Solution>(DocumentDbService.DatabaseUri)
-                .Where(m => m.Type == DocumentType.Solution && problem.Solutions.Contains(m.Id));
+        public async Task<IEnumerable<SolutionDetail>> Solution(Guid id)
+        {
+            var currentUser = await GetRequestUser();
 
+            var solutions = DocumentDbService.Client.CreateDocumentQuery<Solution>(DocumentDbService.DatabaseUri).Where(m => m.Type == DocumentType.Solution && m.Problem == id);
+            
             var solutionDetails = new List<SolutionDetail>();
             foreach (var solution in solutions)
             {
+                var currentUserName = currentUser?.Identity;
                 var user = DocumentDbService.GetDocument<User>(solution.Author);
-
-                var svm = new SolutionDetail(solution, user);
+                var userVm = new UserViewModel(user, currentUserName, Url);
+                var svm = new SolutionDetail(solution, userVm, Url);
 
                 solutionDetails.Add(svm);
             }
 
-            solutionDetails = solutionDetails.OrderByDescending(m => m.Votes).ThenBy(m => m.Passing != null && m.Passing.Value).ThenBy(m => m.Length).ToList();
-
-            return View("Index", new ProblemDetails(problem, solutionDetails, author, language, HttpContext.User.Identity.IsAuthenticated,
-                HttpContext.User.Identity.Name));
+            return solutionDetails.OrderByDescending(m => m.Votes).ThenBy(m => m.Passing != null && m.Passing.Value).ThenBy(m => m.Length).ToList();
         }
-
 
         [Authorize]
         public IActionResult Edit(Guid id)
