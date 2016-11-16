@@ -53,8 +53,6 @@
                                     {modalContent}
                                 </div>
                             </div>
-
-                            
                         </div>
                           <div className="modal-footer">
                             <button type="button" className="btn btn-default" data-dismiss="modal">Close</button>
@@ -83,7 +81,7 @@ class SolutionRow extends React.Component {
                         <td>
                             {this.props.votes}
                         </td>
-                        <td><AuthorBadge profileUrl={this.props.profileUrl} authType={this.props.authorAuthType} name={this.props.author.name} /></td>
+                        <td><AuthorBadge profileUrl={this.props.author.profileUrl} authType={this.props.author.authType} name={this.props.author.name} /></td>
                         <td><span className="badge">{this.props.solutionLength}</span></td>
                         <td>{localDatetime.format("MMMM Do YYYY, h:mm:ss a")}</td>
                         <td>{deleteLink}</td>

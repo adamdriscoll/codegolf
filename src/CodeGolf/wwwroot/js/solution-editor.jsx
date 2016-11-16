@@ -43,16 +43,16 @@
     }
 
     render() {
-        let statusBadge = <i className="fa fa-question fa-lg"></i>;
+        let statusBadge = <span><i className="fa fa-question fa-lg"></i> Unknown solution status.</span>;
         switch(this.state.validationState) {
         case "running":
-            statusBadge = <i className="fa fa-circle-o-notch fa-spin"></i>;
+            statusBadge = <span><i className="fa fa-circle-o-notch fa-spin"></i> Testing solution...</span>;
             break;
         case "passed":
-            statusBadge = <i className="fa fa-check fa-lg"></i>;
+            statusBadge = <span><i className="fa fa-check fa-lg"></i> Solution Successful!</span>;
             break;
         case "failed":
-            statusBadge = <i className="fa fa-times fa-lg"></i>;
+            statusBadge = <span><i className="fa fa-times fa-lg"></i> Solution Failed. See output below.</span>;
             break;
         }
 
@@ -61,7 +61,7 @@
                 <div className="col-md-2">
                     <a href="#!" onClick={this.testSolution.bind(this)}><i className="fa fa-play fa-lg"></i> Run</a>
                 </div>
-                <div className="col-md-2">
+                <div className="col-md-4">
                     {statusBadge}
                 </div>
             </div>);
@@ -69,19 +69,21 @@
 }
 
 class SolutionEditor extends React.Component {
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
 
         this.state = {
             solutionContent: "",
             solutionOutput: "",
-            canSubmitSolution: false,
+            canSubmitSolution: !props.enforceOutput,
             solutionLength: 0
         }
     }
 
     submitSolution() {
-        var self = this;
+        this.state.canSubmitSolution = false;
+        this.setState(this.state);
+
         $.post(this.props.newSolutionUrl,
             { content: this.state.solutionContent, problem: this.props.problemId },
             function() {
@@ -98,7 +100,7 @@ class SolutionEditor extends React.Component {
     onValidationStateChanged(state, output) {
         this.state.solutionOutput = output;
 
-        if (this.props.enforceOuptut) {
+        if (this.props.enforceOutput) {
             this.state.canSubmitSolution = state === "passed";
         } else {
             this.state.canSubmitSolution = true;
@@ -119,7 +121,7 @@ class SolutionEditor extends React.Component {
     }
 
     renderEnforceOutput() {
-        if (!this.props.enforceOuptut) {
+        if (!this.props.enforceOutput) {
             return null;
         }
 
@@ -138,6 +140,11 @@ class SolutionEditor extends React.Component {
         const solutionValidator = this.renderSolutionValidator();
         const enforceOutput = this.renderEnforceOutput();
         const solutionOutput = this.renderSolutionOutput();
+
+        let submitButton = <input className="btn btn-default" type="button" value="Submit" onClick={this.submitSolution.bind(this)}/>;
+        if (!this.state.canSubmitSolution) {
+            submitButton = <input className="btn  btn-default" type="button" value="Submit" disabled/>;
+        }
 
         return (
             <div>
@@ -159,7 +166,7 @@ class SolutionEditor extends React.Component {
                     {solutionOutput}
                 </div>
                 <div>
-                    <input className="btn btn-default" type="button" value="Submit" disabled={this.state.canSubmitSolution} onClick={this.submitSolution.bind(this)} />
+                    {submitButton}
                 </div>
             </div>
             );
