@@ -47,14 +47,17 @@ namespace CodeGolf
 
             // Add framework services.
             services.AddApplicationInsightsTelemetry(Configuration);
+
+
 #if DEBUG
-            var database = Configuration.GetValue<string>("DocumentDbConfig:DebugDocumentDb");
+            var configPrefix = "DocumentDbConfig_Debug";
 #else
-            var database = Configuration.GetValue<string>("DocumentDbConfig:DocumentDb");
+            var configPrefix = "DocumentDbConfig";
 #endif
-            var collection = Configuration.GetValue<string>("DocumentDbConfig:DocumentCollection");
-            var endpoint = Configuration.GetValue<string>("DocumentDbConfig:EndpointUri");
-            var primaryKey = Configuration.GetValue<string>("DocumentDbConfig:PrimaryKey");
+            var database = Configuration.GetValue<string>($"{configPrefix}:DocumentDb");
+            var collection = Configuration.GetValue<string>($"{configPrefix}:DocumentCollection");
+            var endpoint = Configuration.GetValue<string>($"{configPrefix}:EndpointUri");
+            var primaryKey = Configuration.GetValue<string>($"{configPrefix}:PrimaryKey");
 
             var dbService = new DocumentDbService(new DocumentDbConfig
             {

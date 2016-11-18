@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CodeGolf.Models;
@@ -90,35 +91,87 @@ namespace CodeGolf.Controllers
             return Redirect("/Problem/Index/" + problem.Id);
         }
 
-        [Route("solution/{id}/content")]
-        public ContentViewModel Content(Guid id)
+        [Route("solution/{id}/details")]
+        public async Task<SolutionDetailsViewModel> Details(Guid id)
         {
+            var currentUser = await GetRequestUser();
+            var currentUserName = currentUser?.Identity;
+
             var solution = DocumentDbService.GetDocument<Solution>(id);
             if (solution == null)
                 throw new Exception("Solution not found!");
 
-            return new ContentViewModel
+            var comments = DocumentDbService.Repository.Comments.GetSolutionComments(id).ToList();
+
+            return new SolutionDetailsViewModel
             {
                 Content = solution.Content,
+                UpvoteUrl = Url.Action("Upvote", new {itemId = id}),
+                DownvoteUrl = Url.Action("Downvote", new { itemId = id }),
+                AddCommentUrl = Url.Action("AddComment", new { id }),
+                Comments = comments.Select(m => new SolutionCommentViewModel(m, currentUserName, Url)),
+                Votes = solution.Votes
                 //TODO: Langauge = solution.Language.Name
             };
         }
 
         [Authorize]
         [Route("solution/{itemId}/upvote")]
-        public async Task<int> Upvote(Guid itemId, bool upvote)
+        public async Task<int> Upvote(Guid itemId)
         {
             return await Vote(itemId, true);
         }
 
         [Authorize]
         [Route("solution/{itemId}/downvote")]
-        public async Task<int> Downvote(Guid itemId, bool upvote)
+        public async Task<int> Downvote(Guid itemId)
         {
             return await Vote(itemId, false);
         }
 
-        
+        [Route("solution/{id}/comment")]
+        public async  Task<IEnumerable<SolutionCommentViewModel>> Comments(Guid id)
+        {
+            var currentUser = await GetRequestUser();
+            var currentUserName = currentUser?.Identity;
+
+            return
+                DocumentDbService.Repository.Comments.GetSolutionComments(id)
+                    .Select(m => new SolutionCommentViewModel(m, currentUserName, Url));
+        }
+
+        [Authorize]
+        [Route("solution/comment/{id}")]
+        [HttpDelete]
+        public async Task DeleteComment(Guid id)
+        {
+            var currentUser = await GetRequestUser();
+            var comment = DocumentDbService.Repository.Comments.GetSolutionComment(id);
+
+            if (currentUser.Id != comment.Commentor.Id)
+            {
+                throw new Exception("User is not commentor and cannot delete comment!");
+            }
+
+            await DocumentDbService.Repository.Comments.DeleteSolutionComment(id);
+        }
+
+        [Authorize]
+        [Route("solution/{id}/comment")]
+        [HttpPost]
+        public async Task<SolutionCommentViewModel> AddComment(Guid id, string comment)
+        {
+            var currentUser = await GetRequestUser();
+            var solutionComment = new SolutionComment();
+            solutionComment.Solution = id;
+            solutionComment.Comment = comment;
+            solutionComment.Commentor = currentUser;
+            var commentId = await DocumentDbService.Repository.Comments.AddSolutionComment(solutionComment);
+            solutionComment.Id = new Guid(commentId);
+
+            return new SolutionCommentViewModel(solutionComment, currentUser.Identity, Url);
+        }
+
         private async Task<int> Vote(Guid itemId, bool upvote)
         {
             var value = upvote ? 1 : -1;

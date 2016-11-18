@@ -49,3 +49,18 @@ textarea {
     display: none
   }
 }
+
+/* Comments */
+.comment {
+    padding: 5px;
+    font-size: 11px;
+}
+
+.comment hr {
+    margin: 3px;
+}
+
+.commentEditor {
+    width: 100%;
+    max-width: 100%;
+}

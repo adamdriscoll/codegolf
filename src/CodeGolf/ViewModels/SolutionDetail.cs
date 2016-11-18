@@ -43,7 +43,7 @@ namespace CodeGolf.ViewModels
 
             ContentUrl = urlHelper.Action(new UrlActionContext
             {
-                Action = "Content",
+                Action = "Details",
                 Controller = "Solution",
                 Values = new
                 {
