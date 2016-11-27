@@ -111,6 +111,24 @@ namespace CodeGolf.Controllers
 
         [Authorize]
         [HttpPost]
+        [Route("/problem/{id}/close")]
+        public async Task Close(Guid id)
+        {
+            var problem = DocumentDbService.GetDocument<Problem>(id);
+            var user = await GetRequestUser();
+
+            if (problem.Author != user.Id)
+            {
+                throw new Exception("Current user is not author of problem!");
+            }
+
+            problem.Closed = true;
+
+            await DocumentDbService.UpdateDocument(problem);
+        }
+
+        [Authorize]
+        [HttpPost]
         [Route("/problem/")]
         public async Task<string> PostAsync(Problem problem)
         {

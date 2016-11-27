@@ -45,10 +45,6 @@ namespace CodeGolf
                 options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
             });
 
-            // Add framework services.
-            services.AddApplicationInsightsTelemetry(Configuration);
-
-
 #if DEBUG
             var configPrefix = "DocumentDbConfig_Debug";
 #else

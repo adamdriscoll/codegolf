@@ -22,7 +22,8 @@
     problemDescription = Model.Description,
     problemInput = Model.TestCases.FirstOrDefault().Input,
     problemOutput = Model.TestCases.FirstOrDefault().Output,
-    solutionDataUrl = Url.Action("Solution", new {id = Model.Id})
+    solutionDataUrl = Url.Action("Solution", new {id = Model.Id}),
+    closed = Model.Closed
 }, clientOnly: true)
 
 @section scripts {

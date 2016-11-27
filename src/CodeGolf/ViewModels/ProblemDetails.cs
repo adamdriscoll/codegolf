@@ -32,5 +32,6 @@ namespace CodeGolf.ViewModels
         public bool EnforceOutput => _problem.EnforceOutput;
         public Language Language { get; set; }
         public string SolutionHelp { get; set; }
+        public bool Closed => _problem.Closed;
     }
 }
