@@ -22,17 +22,7 @@
         this.setState(this.state);
     }
     
-    onInputContentChanged(content) {
-        this.state.testCases[0].input = content;
-        this.state.canSubmit = this.checkCanSubmit();
-        this.setState(this.state);
-    }
 
-    onOutputContentChanged(content) {
-        this.state.testCases[0].output = content;
-        this.state.canSubmit = this.checkCanSubmit();
-        this.setState(this.state);
-    }
      
     onDescriptionContentChanged(content) {
         this.state.description = content;
@@ -63,9 +53,17 @@
     checkCanSubmit() {
         const titleSpecified = this.state.title != null && this.state.title !== "";
         const descriptionSpecified = this.state.description != null && this.state.description !== "";
-        const outputSpecified = this.state.testCases[0].output != null && this.state.testCases[0].output !== "";
 
-        return titleSpecified && descriptionSpecified && outputSpecified;
+        const testCaseSpecified = this.state.testCases.length > 0;
+
+        var testCaseOutputPopulated = true;
+        if (testCaseSpecified) {
+            this.state.testCases.forEach((testCase) => {
+                testCaseOutputPopulated = testCaseOutputPopulated && testCase.output != null && testCase.output !== "";
+            });
+        }
+
+        return titleSpecified && descriptionSpecified && testCaseOutputPopulated;
     }
 
     componentWillMount() {
@@ -93,6 +91,34 @@
         return <option value={language.id} key={language.id}>{language.displayName}</option>;
     }
 
+    onTestCaseChanged(testCaseIndex, input, output) {
+        this.state.testCases[testCaseIndex].input = input;
+        this.state.testCases[testCaseIndex].output = output;
+        this.state.canSubmit = this.checkCanSubmit();
+        this.setState(this.state);
+    }
+
+    removeTestCase(e) {
+        const testCaseIndex = e.currentTarget.dataset.testcase;
+
+        this.state.testCases.splice(testCaseIndex, 1);
+        this.setState(this.state);
+    }
+
+    addTestCase() {
+        this.state.testCases.push({ input: "", output: "" });
+        this.setState(this.state);
+    }
+
+    renderTestCaseEditor(testCaseIndex, testCase) {
+        return <div className="panel panel-default">
+                   <div className="panel-heading">Test Case <a href="#!" onClick={this.removeTestCase.bind(this)} data-testcase={testCaseIndex}><i className="fa fa-times fa-lg" ></i></a></div>
+                   <div className="panel-body">
+                       <TestCaseEditor index={testCaseIndex} input={testCase.input} output={testCase.output} language={this.state.selectedLanguage} onTestCaseChanged={this.onTestCaseChanged.bind(this)} />
+                   </div>
+               </div>;
+    }
+
     submit() {
         $.post(this.state.postUrl, {
             name: this.state.title,
@@ -109,15 +135,12 @@
     render() {
         const languageOptions = this.state.availableLanguages.map((lang) => this.renderLanguageOptions(lang));
 
+        let testCaseIndex = 0;
+        const testCases = this.state.testCases.map((testCase) => this.renderTestCaseEditor(testCaseIndex++, testCase));
+
         let submit = <input className="btn btn-default" type="button" value="Submit" disabled/>;
         if (this.state.canSubmit) {
             submit = <input className="btn btn-default" type="button" value="Submit" onClick={this.submit.bind(this)}/>;
-        }
-
-        let outputDescription = <small>Define outputs to your problem. </small>;
-        if (this.state.selectedLanguage != null && this.state.selectedLanguage.name === "powershell") {
-            outputDescription = <small>Define outputs to your problem. You can use <a href=
-                                                      "https://github.com/pester/Pester/wiki/Should">Pester Should</a> commands in your expected output. Solution output is available in the <code>$output</code> variable.</small>;
         }
 
         let enforceCheckBox = null;
@@ -148,18 +171,10 @@
                     <small>Describe your problem. You can use markdown in the editor below.</small>
                     <MonacoEditor contents={this.state.description} onContentChanged={this.onDescriptionContentChanged.bind(this)} waitForContent={true}/>
                 </div>
-                <div className="form-group">
-                    <label htmlFor="input">Input</label>
-                    <br />
-                    <small>Define the inputs to your problem. Input isn't required. Input should be valid syntax for the language you select.</small>
-                    <MonacoEditor contents={this.state.testCases[0].input} onContentChanged={this.onInputContentChanged.bind(this)} waitForContent={true}/>
-                </div>
-                <div className="form-group">
-                    <label htmlFor="output">Expected Output</label>
-                    <br />
-                    {outputDescription}
-                    <MonacoEditor contents={this.state.testCases[0].output} onContentChanged={this.onOutputContentChanged.bind(this)} waitForContent={true}/>
-                </div>
+                {testCases}
+
+                <input className="btn btn-default" type="button" value="Add Test Case" onClick={this.addTestCase.bind(this)} />
+
                 {enforceCheckBox}
                 {submit}
             </div>

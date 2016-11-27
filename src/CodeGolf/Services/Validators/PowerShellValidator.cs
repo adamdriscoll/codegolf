@@ -70,8 +70,12 @@ namespace CodeGolf.Services.Validators
                 Import-Module D:\home\pester-3.4.3\pester.psd1
                 Invoke-Pester -Quiet -Script 'D:\home\site\wwwroot\{solutionId}\*' -OutputXml 'D:\home\site\wwwroot\{solutionId}\TestResults.xml' -ErrorAction SilentlyContinue
                 [xml]$xml = Get-Content 'D:\home\site\wwwroot\{solutionId}\TestResults.xml'
-                $output = $xml.'test-results'.'test-suite'.results.'test-suite'.results.'test-case' | ForEach-Object {{ [PSCustomObject]@{{name=$_.name;success=$_.success;message=$_.failure.message }}}}
-                Out-File -Encoding Ascii -FilePath $res -inputObject ($output | ConvertTo-Json)
+                $output = $xml.'test-results'.'test-suite'.results.'test-suite'.results.'test-case' | ForEach-Object {{ [PSCustomObject]@{{name=$_.name;success=$_.success;message=$_.failure.message }}}} 
+                $output = ConvertTo-Json $output
+                if ($xml.'test-results'.total -eq 1) {{
+                    $output = ""[$output]""
+                }}
+                Out-File -Encoding Ascii -FilePath $res -inputObject $output
             ";
         }
 
@@ -103,17 +107,16 @@ namespace CodeGolf.Services.Validators
             var solutionId = await WriteTestCases(problem.TestCases, solution);
             Thread.Sleep(500);
             var output = await _azureFunctionsService.StartFunction(solutionId);
-
+            
             await _azureFunctionsService.DeleteFunction("/" + solutionId);
 
             try
             {
-                var pesterResults = JsonConvert.DeserializeObject<PesterResult[]>(output);
+                var pesterResults = JsonConvert.DeserializeObject<List<PesterResult>>(JsonConvert.DeserializeObject<string>(output));
                 foreach (var pesterResult in pesterResults)
                 {
                     testCaseResults.Add(new TestCaseResult(pesterResult.Message, pesterResult.Success == "True"));
                 }
-
             }
             catch
             {

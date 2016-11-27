@@ -20,8 +20,7 @@
     authorProfileUrl = Url.Action("Get", "Profile", Model.AuthorId),
     language = Model.Language.DisplayName,
     problemDescription = Model.Description,
-    problemInput = Model.TestCases.FirstOrDefault().Input,
-    problemOutput = Model.TestCases.FirstOrDefault().Output,
+    testCases = Model.TestCases,
     solutionDataUrl = Url.Action("Solution", new {id = Model.Id}),
     closed = Model.Closed
 }, clientOnly: true)

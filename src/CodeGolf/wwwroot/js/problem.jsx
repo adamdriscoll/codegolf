@@ -15,18 +15,28 @@
         this.setState(this.state);
     }
 
+    renderTestCase(testCase) {
+        return <div className="panel panel-default">
+                    <div className="panel-body">
+                       <b>Input</b>
+                       <pre>{testCase.input}</pre>
+                       <b>Expected Output</b>
+                       <pre>{testCase.output}</pre>
+                    </div>
+               </div>;
+    }
+
     render() {
+        const testCases = this.props.testCases.map((testCase) => this.renderTestCase(testCase));
+
         return (
             <div>
                 <p>
                     {this.state.descriptionHtml}
                 </p>
-
-                <h3>Input</h3>
-                <pre>{this.props.input}</pre>
-
-                <h3>Expected Output</h3>
-                <pre>{this.props.output}</pre>
+                <h3>Test Cases</h3>
+                {testCases}
+               
             </div>
         );
     }
@@ -73,7 +83,7 @@ class Problem extends React.Component {
                 {editLink}
             </div>
             <hr/>
-            <ProblemDescription description={this.props.problemDescription} input={this.props.problemInput} output={this.props.problemOutput} />
+            <ProblemDescription description={this.props.problemDescription} testCases={this.props.testCases} />
             <h3>Rounds</h3>
             <SolutionTable solutionDataUrl={this.props.solutionDataUrl} />
             <div className="row">
