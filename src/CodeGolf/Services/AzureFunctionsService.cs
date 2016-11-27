@@ -6,11 +6,12 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using CodeGolf.Interfaces;
 using Newtonsoft.Json;
 
 namespace CodeGolf.Services
 {
-    public class AzureFunctionsService
+    public class AzureFunctionsService : IAzureFunctionsService
     {
         private string _url;
         private string _username;
