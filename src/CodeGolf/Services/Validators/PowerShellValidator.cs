@@ -36,11 +36,31 @@ namespace CodeGolf.Services.Validators
             }
 
             solutionContent += solution;
+            solutionContent = FormatTestCase(solutionContent);
 
             var solutionId = Language + Guid.NewGuid();
-            await _azureFunctionsService.WritePowerShellFunction("/" + solutionId + "/", solutionContent);
+
+            var solutionFolder = $"/{solutionId}/";
+            var solutionFile = $"{solutionFolder}run.ps1";
+
+            await _azureFunctionsService.WriteFile(solutionFile, solutionContent);
+            await _azureFunctionsService.WriteFunctionJson(solutionFolder);
 
             return solutionId;
+        }
+
+        private static string FormatTestCase(string content)
+        {
+            return $@"
+                function Run 
+                {{
+                    {content}
+                }}
+
+                $output = Run
+                
+                Out-File -Encoding Ascii -FilePath $res -inputObject $output
+            ";
         }
 
         public async Task<ValidationResult> Validate(Problem problem, string solution)

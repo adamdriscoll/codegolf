@@ -146,39 +146,20 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
 
             ";
 
+            await WriteFile(path.Replace("\\", "/") + "run.csx", body);
+            await WriteFunctionJson(path);
+        }
+
+        public async Task WriteFile(string path, string content)
+        {
             var uriBuilder = new UriBuilder(_url);
-            uriBuilder.Path = "api/vfs/site/wwwroot/" + path.Replace("\\", "/") + "run.csx";
+            uriBuilder.Path = "api/vfs/site/wwwroot/" + path.Replace("\\", "/");
             var client = new HttpClient();
 
             var byteArray = Encoding.ASCII.GetBytes(_username + ":" + _password);
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
 
-            await client.PutAsync(uriBuilder.Uri, new StringContent(body));
-            await WriteFunctionJson(path);
-        }
-
-        public async Task WritePowerShellFunction(string path, string content)
-        {
-            var body = $@"
-                function Run 
-                {{
-                    {content}
-                }}
-
-                $output = Run
-                
-                Out-File -Encoding Ascii -FilePath $res -inputObject $output
-            ";
-
-            var uriBuilder = new UriBuilder(_url);
-            uriBuilder.Path = "api/vfs/site/wwwroot/" + path.Replace("\\", "/") + "run.ps1";
-            var client = new HttpClient();
-
-            var byteArray = Encoding.ASCII.GetBytes(_username + ":" + _password);
-            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
-
-            await client.PutAsync(uriBuilder.Uri, new StringContent(body));
-            await WriteFunctionJson(path);
+            await client.PutAsync(uriBuilder.Uri, new StringContent(content));
         }
     }
 

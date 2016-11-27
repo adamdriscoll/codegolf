@@ -40,7 +40,7 @@ namespace CodeGolf.Test.Services.Validators
             await _validator.Validate(problem, "output");
 
             await _azureFunctionsService.Received(1)
-                .WritePowerShellFunction(Arg.Any<string>(), "input" + Environment.NewLine + "output");
+                .WriteFile(Arg.Any<string>(), FormatExpectedOutput("input" + Environment.NewLine + "output"));
         }
 
         [Test]
@@ -56,7 +56,7 @@ namespace CodeGolf.Test.Services.Validators
             await _validator.Validate(problem, "output");
 
             await _azureFunctionsService.Received(1)
-                .WritePowerShellFunction(Arg.Any<string>(), "output");
+                .WriteFile(Arg.Any<string>(), FormatExpectedOutput("output"));
         }
 
         [Test]
@@ -72,7 +72,7 @@ namespace CodeGolf.Test.Services.Validators
             await _validator.Validate(problem, "output");
 
             await _azureFunctionsService.Received(1)
-                .WritePowerShellFunction(Arg.Any<string>(), "output");
+                .WriteFile(Arg.Any<string>(), FormatExpectedOutput("output"));
         }
 
         [Test]
@@ -88,7 +88,21 @@ namespace CodeGolf.Test.Services.Validators
             await _validator.Validate(problem, "output");
 
             await _azureFunctionsService.Received(1)
-                .WritePowerShellFunction(Arg.Any<string>(), "output");
+                .WriteFile(Arg.Any<string>(), FormatExpectedOutput("output"));
+        }
+
+        private string FormatExpectedOutput(string content)
+        {
+            return $@"
+                function Run 
+                {{
+                    {content}
+                }}
+
+                $output = Run
+                
+                Out-File -Encoding Ascii -FilePath $res -inputObject $output
+            ";
         }
     }
 }
