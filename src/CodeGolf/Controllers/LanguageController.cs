@@ -16,7 +16,7 @@ namespace CodeGolf.Controllers
 
         public IEnumerable<Language> Get()
         {
-            return _documentDbService.Client.CreateDocumentQuery<Language>(_documentDbService.DatabaseUri).Where(m => m.Type == DocumentType.Language);
+            return _documentDbService.Client.CreateDocumentQuery<Language>(_documentDbService.DatabaseUri).Where(m => m.Type == DocumentType.Language).OrderBy(m => m.DisplayName);
         }
     }
 }
