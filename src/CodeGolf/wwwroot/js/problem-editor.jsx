@@ -149,7 +149,7 @@
                 <div className="form-group">
                     <label htmlFor="output">Expected Output</label>
                     <br />
-                    <small>Define outputs to your problem.</small>
+                    <small>Define outputs to your problem. You can use <a href="https://github.com/pester/Pester/wiki/Should">Pester Should</a> commands in your expected output. Solution output is available in the <code>$output</code> variable.</small>
                     <MonacoEditor contents={this.state.testCases[0].output} onContentChanged={this.onOutputContentChanged.bind(this)} waitForContent={true}/>
                 </div>
                 {enforceCheckBox}

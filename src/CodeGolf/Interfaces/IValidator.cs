@@ -35,6 +35,12 @@ namespace CodeGolf.Interfaces
             Passed = expectedOutput.Equals(ActualOutput, StringComparison.OrdinalIgnoreCase);
         }
 
+        public TestCaseResult(string actualOutput, bool passed)
+        {
+            ActualOutput = actualOutput;
+            Passed = passed;
+        }
+
         public string ExpectedOutput { get; }
 
         public string ActualOutput { get; }

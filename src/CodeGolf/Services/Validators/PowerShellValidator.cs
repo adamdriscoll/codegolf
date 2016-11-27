@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using CodeGolf.Interfaces;
 using CodeGolf.Models;
+using Newtonsoft.Json;
 
 namespace CodeGolf.Services.Validators
 {
@@ -26,57 +29,106 @@ namespace CodeGolf.Services.Validators
                 input.StartsWith("None", StringComparison.OrdinalIgnoreCase);
         }
 
-        private async Task<string> WriteTestCase(Problem.TestCase testCase, string solution)
+        private async Task<string> WriteTestCases(IEnumerable<Problem.TestCase> testCases, string solution)
         {
-            var solutionContent = string.Empty;
-            if (!IsEmptyInput(testCase.Input))
+            var testFileContent = new StringBuilder();
+            var index = 0;
+            foreach (var testCase in testCases)
             {
-                solutionContent = testCase.Input;
-                solutionContent += Environment.NewLine;
-            }
+                var solutionContent = new StringBuilder();
 
-            solutionContent += solution;
-            solutionContent = FormatTestCase(solutionContent);
+                if (!IsEmptyInput(testCase.Input))
+                {
+                    solutionContent.AppendLine(testCase.Input);
+                }
+
+                solutionContent.AppendLine(solution);
+
+                var testCaseContent = FormatTestCase(index, solutionContent.ToString(), testCase.Output);
+                testFileContent.AppendLine(testCaseContent);
+
+                index++;
+            }
 
             var solutionId = Language + Guid.NewGuid();
 
             var solutionFolder = $"/{solutionId}/";
-            var solutionFile = $"{solutionFolder}run.ps1";
+            var solutionFile = $"{solutionFolder}run.tests.ps1";
+            var pesterExecutionFile = $"{solutionFolder}run.ps1";
+            var testContents = $"Describe 'CodeGolfProblem' {{ {testFileContent} }}";
 
-            await _azureFunctionsService.WriteFile(solutionFile, solutionContent);
+            await _azureFunctionsService.WriteFile(pesterExecutionFile, FormatPesterExecutionFile(solutionId));
+            await _azureFunctionsService.WriteFile(solutionFile, testContents);
             await _azureFunctionsService.WriteFunctionJson(solutionFolder);
 
             return solutionId;
         }
 
-        private static string FormatTestCase(string content)
+        private static string FormatPesterExecutionFile(string solutionId)
         {
-            return $@"
-                function Run 
-                {{
-                    {content}
-                }}
+            return $@" 
+                Import-Module D:\home\pester-3.4.3\pester.psd1
+                Invoke-Pester -Quiet -Script 'D:\home\site\wwwroot\{solutionId}\*' -OutputXml 'D:\home\site\wwwroot\{solutionId}\TestResults.xml' -ErrorAction SilentlyContinue
+                [xml]$xml = Get-Content 'D:\home\site\wwwroot\{solutionId}\TestResults.xml'
+                $output = $xml.'test-results'.'test-suite'.results.'test-suite'.results.'test-case' | ForEach-Object {{ [PSCustomObject]@{{name=$_.name;success=$_.success;message=$_.failure.message }}}}
+                Out-File -Encoding Ascii -FilePath $res -inputObject ($output | ConvertTo-Json)
+            ";
+        }
 
-                $output = Run
-                
-                Out-File -Encoding Ascii -FilePath $res -inputObject $output
+        private static string FormatTestCase(int index, string content, string should)
+        {
+            if (!should.ToLower().Contains("should"))
+            {
+                should = $"$output | Should be '{should}'";
+            }
+
+            return $@"
+                It '{index}' {{
+                    function Run 
+                    {{
+                        {content}
+                    }}
+
+                    $output = Run
+
+                    {should}
+                }}
             ";
         }
 
         public async Task<ValidationResult> Validate(Problem problem, string solution)
         {
             var testCaseResults = new List<TestCaseResult>();
-            foreach (var testCase in problem.TestCases)
+
+            var solutionId = await WriteTestCases(problem.TestCases, solution);
+            Thread.Sleep(500);
+            var output = await _azureFunctionsService.StartFunction(solutionId);
+
+            await _azureFunctionsService.DeleteFunction("/" + solutionId);
+
+            try
             {
-                var solutionId = await WriteTestCase(testCase, solution);
-                Thread.Sleep(500);
-                var output = await _azureFunctionsService.StartFunction(solutionId);
-                await _azureFunctionsService.DeleteFunction("/" + solutionId);
+                var pesterResults = JsonConvert.DeserializeObject<PesterResult[]>(output);
+                foreach (var pesterResult in pesterResults)
+                {
+                    testCaseResults.Add(new TestCaseResult(pesterResult.Message, pesterResult.Success == "True"));
+                }
 
-                testCaseResults.Add(new TestCaseResult(testCase.Output, output.Trim()));
             }
-
+            catch
+            {
+                var pesterResult = JsonConvert.DeserializeObject<PesterResult>(output);
+                testCaseResults.Add(new TestCaseResult(pesterResult.Message, pesterResult.Success == "True"));
+            }
+            
             return new ValidationResult(testCaseResults);
         }
+    }
+
+    public class PesterResult
+    {
+        public string Message { get; set; }
+        public string Name { get; set; }
+        public string Success { get; set; }
     }
 }

@@ -65,7 +65,7 @@ namespace CodeGolf.Services
                 var client = new HttpClient();
                 return await client.GetStringAsync(uriBuilder.Uri);
             }
-            catch (Exception ex)
+            catch (HttpRequestException ex)
             {
                 return $"ERROR: {ex.Message}";
             }
