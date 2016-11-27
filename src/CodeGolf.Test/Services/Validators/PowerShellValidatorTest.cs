@@ -26,6 +26,5 @@ namespace CodeGolf.Test.Services.Validators
         {
             Assert.AreEqual("PowerShell", _validator.Language);
         }
-
     }
 }

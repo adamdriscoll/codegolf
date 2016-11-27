@@ -7,6 +7,7 @@
             description: "",
             testCases: [{ input: "", output: "" }],
             language: "",
+            selectedLanguage: null,
             availableLanguages: [],
             enforceOutput: false,
             canSubmit: false,
@@ -46,6 +47,7 @@
         this.state.availableLanguages.forEach(lang => {
             if (lang.id === event.target.value) {
                 this.state.showEnforceCheckBox = lang.supportsValidation;
+                this.state.selectedLanguage = lang;
             }
         });
 
@@ -112,6 +114,12 @@
             submit = <input className="btn btn-default" type="button" value="Submit" onClick={this.submit.bind(this)}/>;
         }
 
+        let outputDescription = <small>Define outputs to your problem. </small>;
+        if (this.state.selectedLanguage != null && this.state.selectedLanguage.name === "powershell") {
+            outputDescription = <small>Define outputs to your problem. You can use <a href=
+                                                      "https://github.com/pester/Pester/wiki/Should">Pester Should</a> commands in your expected output. Solution output is available in the <code>$output</code> variable.</small>;
+        }
+
         let enforceCheckBox = null;
         if (this.state.showEnforceCheckBox) {
             enforceCheckBox = <div className="form-group">
@@ -149,7 +157,7 @@
                 <div className="form-group">
                     <label htmlFor="output">Expected Output</label>
                     <br />
-                    <small>Define outputs to your problem. You can use <a href="https://github.com/pester/Pester/wiki/Should">Pester Should</a> commands in your expected output. Solution output is available in the <code>$output</code> variable.</small>
+                    {outputDescription}
                     <MonacoEditor contents={this.state.testCases[0].output} onContentChanged={this.onOutputContentChanged.bind(this)} waitForContent={true}/>
                 </div>
                 {enforceCheckBox}
