@@ -1,6 +1,7 @@
 version: 1.0.{build}
 before_build:
 - cmd: dotnet restore
+before_test:
 - ps: (new-object net.webclient).DownloadFile('https://aka.ms/documentdb-emulator', 'DocumentDB.Emulator.msi')
 - ps: msiexec.exe /i DocumentDB.Emulator.msi
 - ps: Start-Process 'C:\Program Files\Azure DocumentDB Emulator\DocumentDB.LocalEmulator.exe'
