@@ -316,6 +316,46 @@ namespace CodeGolf.Test.Services
         }
 
         [Test]
+        public async Task ValidateVersion1_6_ShouldSetLanguageOnNewProblem()
+        {
+            var v10 = new Version1_0();
+            await v10.Step(_service);
+
+            var v11 = new Version1_1();
+            await v11.Step(_service);
+
+            var v12 = new Version1_2();
+            await v12.Step(_service);
+
+            var v13 = new Version1_3();
+            await v13.Step(_service);
+
+            var v14 = new Version1_4();
+            await v14.Step(_service);
+
+            var v15 = new Version1_5();
+            await v15.Step(_service);
+
+            var v16 = new Version1_6();
+            Assert.AreEqual(new Version(1, 6), v16.Version);
+
+            var problem = new Problem
+            {
+                Id = Guid.NewGuid(),
+                Description = "My Problem",
+                Language = _service.Client.CreateDocumentQuery<Language>(UriFactory.CreateDocumentCollectionUri(Constants.Database, Constants.Collection)).Where(m => m.Name == "csharp").ToList().First().Id
+            };
+
+            await _service.Client.CreateDocumentAsync(_service.DatabaseUri, problem);
+
+            await v16.Step(_service);
+
+            var newProblem = await _service.Repository.Problem.Get(problem.Id);
+
+            Assert.AreEqual("csharp", newProblem.LanguageModel.Name);
+        }
+
+        [Test]
         public async Task ValidateVersion1_6_ShouldDeleteProblemFromOldCollection()
         {
             var v10 = new Version1_0();
