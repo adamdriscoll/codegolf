@@ -84,7 +84,7 @@ class VoteButtons extends React.Component {
                     <VoteButton upvote={true} onVoted={this.handleUpVote.bind(this)} canVote={canUpvote} />
                     </div>
                 <div className="row text-center">
-                    {this.state.votes}
+                    {this.props.votes}
                 </div>
                 <div className="row text-center">
                     <VoteButton upvote={false} onVoted={this.handleDownVote.bind(this)} canVote={canDownvote} />

@@ -119,6 +119,11 @@ class SolutionViewer extends React.Component {
             });
     }
 
+    onVote(votes) {
+        this.state.votes = votes;
+        this.setState(this.state);
+    }
+
     render() {
         let modalContent = <i className="fa fa-spinner fa-spin fa-3x fa-fw"></i>;
         if (this.state.content !== "") {
@@ -146,7 +151,7 @@ class SolutionViewer extends React.Component {
                         <div className="modal-body">
                             <div className="row">
                                 <div className="col-md-1">
-                                    <VoteButtons upvoteUrl={this.props.upvoteUrl} downvoteUrl={this.props.downvoteUrl} votes={this.props.votes} />
+                                    <VoteButtons upvoteUrl={this.state.upvoteUrl} downvoteUrl={this.state.downvoteUrl} votes={this.state.votes} onVote={this.onVote.bind(this)} />
                                 </div>
                                 <div className="col-md-11">
                                     {modalContent}
