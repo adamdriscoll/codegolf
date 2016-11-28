@@ -3,9 +3,8 @@ before_build:
 - cmd: dotnet restore
 build:
   verbosity: minimal
-
 before_test:
-  - ps: Start-FileDownload 'https://aka.ms/documentdb-emulator'
+  - ps: (new-object net.webclient).DownloadFile('https://aka.ms/documentdb-emulator', 'DocumentDB.Emulator.msi')
   - ps: msiexec.exe /i DocumentDB.Emulator.msi
   - ps: Start-Process 'C:\Program Files\Azure DocumentDB Emulator\DocumentDB.LocalEmulator.exe'
 
