@@ -18,6 +18,18 @@ namespace CodeGolf.Controllers
             _documentDbService = documentDbService;
         }
 
+        [Route("/profile/")]
+        public async Task<IActionResult> Mine()
+        {
+            var profileViewModel = new ProfileViewModel(this.HttpContext.User.Identity.IsAuthenticated, this.HttpContext.User.Identity.Name);
+            if (HttpContext.User.Identity.IsAuthenticated)
+            {
+                profileViewModel.User = await GetRequestUser();
+            }
+
+            return ReturnProfileView(profileViewModel);
+        }
+
         [Route("/profile/{profile}")]
         public async Task<IActionResult> Find(string profile)
         {
