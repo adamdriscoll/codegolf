@@ -16,14 +16,10 @@ namespace CodeGolf.Test.Services
         [SetUp]
         public async Task SetUp()
         {
-            _service = new DocumentDbService(new DocumentDbConfig
-            {
-                //These are the settings for the DocumentDB emulator
-                Database = "CodeGolfDB",
-                DocumentCollection = "CodeGolfCollection",
-                EndpointUri = "https://localhost:8081",
-                PrimaryKey = "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw=="
-            });
+            var documentDbEmulator = new DocumentDbEmulator();
+            documentDbEmulator.Start();
+
+            _service = new DocumentDbService(Constants.DocumentDbConfig);
 
             await _service.Client.CreateDatabaseIfNotExists("CodeGolfDB");
             await _service.Client.CreateDocumentCollectionIfNotExists("CodeGolfDB", "CodeGolfCollection");
@@ -280,6 +276,94 @@ namespace CodeGolf.Test.Services
             } catch { }
         }
 
+        [Test]
+        public async Task ValidateVersion1_6_ShouldCreateProblemInNewCollection()
+        {
+            var v10 = new Version1_0();
+            await v10.Step(_service);
+
+            var v11 = new Version1_1();
+            await v11.Step(_service);
+
+            var v12 = new Version1_2();
+            await v12.Step(_service);
+
+            var v13 = new Version1_3();
+            await v13.Step(_service);
+
+            var v14 = new Version1_4();
+            await v14.Step(_service);
+
+            var v15 = new Version1_5();
+            await v15.Step(_service);
+
+            var v16 = new Version1_6();
+            Assert.AreEqual(new Version(1, 6), v16.Version);
+
+            var problem = new Problem
+            {
+                Id = Guid.NewGuid(),
+                Description = "My Problem"
+            };
+
+            await _service.Client.CreateDocumentAsync(_service.DatabaseUri, problem);
+
+            await v16.Step(_service);
+
+            var newUser = await _service.Repository.Problem.Get(problem.Id);
+
+            Assert.AreEqual(problem.Description, newUser.Description);
+        }
+
+        [Test]
+        public async Task ValidateVersion1_6_ShouldDeleteProblemFromOldCollection()
+        {
+            var v10 = new Version1_0();
+            await v10.Step(_service);
+
+            var v11 = new Version1_1();
+            await v11.Step(_service);
+
+            var v12 = new Version1_2();
+            await v12.Step(_service);
+
+            var v13 = new Version1_3();
+            await v13.Step(_service);
+
+            var v14 = new Version1_4();
+            await v14.Step(_service);
+
+            var v15 = new Version1_5();
+            await v15.Step(_service);
+
+            var v16 = new Version1_6();
+            Assert.AreEqual(new Version(1, 6), v16.Version);
+
+            var problem = new Problem
+            {
+                Id = Guid.NewGuid(),
+                Description = "My Problem"
+            };
+
+            await _service.Client.CreateDocumentAsync(_service.DatabaseUri, problem);
+
+            var myProblem =
+                await _service.Client.ReadDocumentAsync(UriFactory.CreateDocumentUri("CodeGolfDB", "CodeGolfCollection",
+                    problem.Id.ToString()));
+
+            Assert.IsNotNull(myProblem);
+
+            await v16.Step(_service);
+
+            try
+            {
+                await _service.Client.ReadDocumentAsync(UriFactory.CreateDocumentUri("CodeGolfDB", "CodeGolfCollection",
+                    problem.Id.ToString()));
+
+                Assert.Fail("Should not find resource.");
+            }
+            catch { }
+        }
 
         private Language FindLanguage(string name)
         {

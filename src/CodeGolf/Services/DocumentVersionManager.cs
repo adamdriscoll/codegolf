@@ -22,6 +22,7 @@ namespace CodeGolf.Services
             _steps.Add(new Version1_3());
             _steps.Add(new Version1_4());
             _steps.Add(new Version1_5());
+            _steps.Add(new Version1_6());
         }
 
         public async Task Upgrade()
@@ -190,6 +191,27 @@ namespace CodeGolf.Services
         }
 
         public Version Version => new Version(1, 5);
+    }
+
+    public class Version1_6 : IDocumentUpgradeStep
+    {
+        public async Task Step(DocumentDbService dbService)
+        {
+            var problems = dbService.Client.CreateDocumentQuery<Problem>(dbService.DatabaseUri)
+                .Where(m => m.Type == DocumentType.Problem)
+                .ToList();
+
+            foreach (var problem in problems)
+            {
+                problem.LanguageModel = dbService.GetDocument<Language>(problem.Language);
+                problem.AuthorModel = await dbService.Repository.Users.Get(problem.Author);
+
+                await dbService.Repository.Problem.Create(problem);
+                await dbService.Client.DeleteDocumentAsync(UriFactory.CreateDocumentUri("CodeGolfDB", "CodeGolfCollection", problem.Id.ToString()));
+            }
+        }
+
+        public Version Version => new Version(1, 6);
     }
 
     public interface IDocumentUpgradeStep

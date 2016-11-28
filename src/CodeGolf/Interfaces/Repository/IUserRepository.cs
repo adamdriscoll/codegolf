@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using CodeGolf.Models;
 
-namespace CodeGolf.Interfaces
+namespace CodeGolf.Interfaces.Repository
 {
     public interface IUserRepository
     {

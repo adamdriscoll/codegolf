@@ -2,10 +2,11 @@
 using System.Linq;
 using System.Threading.Tasks;
 using CodeGolf.Interfaces;
+using CodeGolf.Interfaces.Repository;
 using CodeGolf.Models;
 using Microsoft.Azure.Documents.Client;
 
-namespace CodeGolf.Services
+namespace CodeGolf.Services.Repository
 {
     public class CommentRepository : ICommentRepository
     {

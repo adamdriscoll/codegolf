@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace CodeGolf.Interfaces
+namespace CodeGolf.Interfaces.Repository
 {
     public interface IRepository
     {
@@ -8,5 +8,7 @@ namespace CodeGolf.Interfaces
         ICommentRepository Comments { get; }
 
         IUserRepository Users { get; }
+
+        IProblemRepository Problem { get; }
     }
 }

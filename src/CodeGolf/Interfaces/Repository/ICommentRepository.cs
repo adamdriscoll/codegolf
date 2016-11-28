@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CodeGolf.Models;
 
-namespace CodeGolf.Interfaces
+namespace CodeGolf.Interfaces.Repository
 {
     public interface ICommentRepository
     {

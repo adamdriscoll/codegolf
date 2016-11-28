@@ -44,7 +44,7 @@ namespace CodeGolf.Controllers
             if (solution.Author != user.Id)
                 throw new Exception("User does not own solution!");
 
-            var problem = DocumentDbService.GetDocument<Problem>(solution.Problem);
+            var problem = await DocumentDbService.Repository.Problem.Get(solution.Problem);
             if (problem == null)
                 throw new Exception("Problem not found!");
 
@@ -52,7 +52,8 @@ namespace CodeGolf.Controllers
             solutions.Remove(guid);
             problem.Solutions = solutions.ToArray();
             problem.SolutionCount--;
-            await DocumentDbService.UpdateDocument(problem);
+
+            await DocumentDbService.Repository.Problem.Update(problem);
             await DocumentDbService.DeleteDocument(solution.Id);
 
             return Redirect("/Problem/Index/" + problem.Id);
@@ -61,10 +62,8 @@ namespace CodeGolf.Controllers
         [Authorize]
         public async Task<ValidationResult> ValidateAsync(Guid problem, string content)
         {
-            var theProblem = DocumentDbService.GetDocument<Problem>(problem);
-            var language = DocumentDbService.GetDocument<Language>(theProblem.Language, true);
-
-            return await _problemValidatorService.Validate(language.Name, theProblem, content);
+            var theProblem = await DocumentDbService.Repository.Problem.Get(problem);
+            return await _problemValidatorService.Validate(theProblem.LanguageModel.Name, theProblem, content);
         } 
 
         [Authorize]
@@ -80,14 +79,13 @@ namespace CodeGolf.Controllers
             solution.Author = user.Id;
 
             await DocumentDbService.CreateDocument(solution);
-            var problem = DocumentDbService.GetDocument<Problem>(solution.Problem);
+            var problem = await DocumentDbService.Repository.Problem.Get(solution.Problem);
 
             var list = problem.Solutions.ToList();
             list.Add(solution.Id);
             problem.Solutions = list.ToArray();
             problem.SolutionCount = problem.Solutions.Length;
-
-            await DocumentDbService.Client.UpsertDocumentAsync(DocumentDbService.DatabaseUri, problem);
+            await DocumentDbService.Repository.Problem.Update(problem);
 
             return Redirect("/Problem/Index/" + problem.Id);
         }

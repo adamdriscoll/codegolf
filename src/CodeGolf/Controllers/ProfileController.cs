@@ -27,7 +27,7 @@ namespace CodeGolf.Controllers
                 profileViewModel.User = await GetRequestUser();
             }
 
-            return ReturnProfileView(profileViewModel);
+            return await ReturnProfileView(profileViewModel);
         }
 
         [Route("/profile/{profile}")]
@@ -53,22 +53,19 @@ namespace CodeGolf.Controllers
                 profileViewModel.User = profiles.First();
             }
 
-            return ReturnProfileView(profileViewModel);
+            return await ReturnProfileView(profileViewModel);
         }
 
-        private IActionResult ReturnProfileView(ProfileViewModel profileViewModel)
+        private async Task<IActionResult> ReturnProfileView(ProfileViewModel profileViewModel)
         {
             var problemProfiles = new List<ProfileViewModel.ProblemProfile>();
-            foreach (
-                var problem in
-                    _documentDbService.Client.CreateDocumentQuery<Problem>(_documentDbService.DatabaseUri)
-                        .Where(m => m.Author == profileViewModel.User.Id && m.Type == DocumentType.Problem))
+            var problems = await _documentDbService.Repository.Problem.GetByUser(profileViewModel.User);
+            foreach (var problem in problems)
             {
-                var language = _documentDbService.GetDocument<Language>(problem.Language, true);
                 problemProfiles.Add(new ProfileViewModel.ProblemProfile
                 {
                     Id = problem.Id.ToString(),
-                    Language = language.DisplayName,
+                    Language = problem.LanguageModel.DisplayName,
                     Solutions = problem.SolutionCount,
                     Name = problem.Name
                 });
@@ -80,7 +77,7 @@ namespace CodeGolf.Controllers
             var solutions = _documentDbService.Client.CreateDocumentQuery<Solution>(_documentDbService.DatabaseUri).Where(m => m.Author == profileViewModel.User.Id && m.Type == DocumentType.Solution);
             foreach (var solution in solutions)
             {
-                var problem = _documentDbService.GetDocument<Problem>(solution.Problem);
+                var problem = await _documentDbService.Repository.Problem.Get(solution.Problem);
 
                 solutionProfiles.Add(new ProfileViewModel.SolutionProfile
                 {
@@ -88,7 +85,7 @@ namespace CodeGolf.Controllers
                     Problem = problem.Name,
                     ProblemId = problem.Id.ToString(),
                     Length = solution.Length,
-                    Language = _documentDbService.GetDocument<Language>(problem.Language, true).DisplayName
+                    Language = problem.LanguageModel.DisplayName
 
                 });
             }

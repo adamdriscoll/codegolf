@@ -63,6 +63,11 @@ namespace CodeGolf
                 PrimaryKey = primaryKey
             });
 
+#if DEBUG
+            var emulator = new DocumentDbEmulator();
+            emulator.Start();
+#endif
+
             dbService.EnsureInitialized().Wait();
             var documentVersionManager = new DocumentVersionManager(dbService);
             documentVersionManager.Upgrade().Wait();

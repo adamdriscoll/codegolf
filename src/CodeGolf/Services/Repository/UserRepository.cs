@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using CodeGolf.Interfaces;
+using CodeGolf.Interfaces.Repository;
 using CodeGolf.Models;
 using Microsoft.Azure.Documents.Client;
 

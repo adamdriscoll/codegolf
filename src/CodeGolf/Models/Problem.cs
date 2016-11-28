@@ -19,7 +19,13 @@ namespace CodeGolf.Models
         public Guid[] Solutions { get; set; }
         public int SolutionCount { get; set; }
         public Guid Language { get; set; }
+
+        public Language LanguageModel { get; set; }
+
         public Guid Author { get; set; }
+
+        public User AuthorModel { get; set; }
+
         public override DocumentType Type => DocumentType.Problem;
         public bool EnforceOutput { get; set; }
         public bool Closed { get; set; }

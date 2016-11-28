@@ -1,7 +1,8 @@
 ﻿using System.Threading.Tasks;
 using CodeGolf.Interfaces;
+using CodeGolf.Interfaces.Repository;
 
-namespace CodeGolf.Services
+namespace CodeGolf.Services.Repository
 {
     public class DocumentDbRepository : IRepository
     {
@@ -18,10 +19,11 @@ namespace CodeGolf.Services
         {
             await Comments.Initialize();
             await Users.Initialize();
+            await Problem.Initialize();
         }
 
         public ICommentRepository Comments => new CommentRepository(_service.Client, _database);
-
         public IUserRepository Users => new UserRepository(_service.Client, _database);
+        public IProblemRepository Problem => new ProblemRepository(_service.Client, _database);
     }
 }
