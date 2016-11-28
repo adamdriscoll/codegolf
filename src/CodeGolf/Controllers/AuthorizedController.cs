@@ -19,6 +19,8 @@ namespace CodeGolf.Controllers
 
         protected async Task<User> GetRequestUser()
         {
+            if (!HttpContext.User.Identity.IsAuthenticated) return null;
+
             var user = DocumentDbService.Client.CreateDocumentQuery<User>(DocumentDbService.DatabaseUri).Where(m => m.Identity == this.HttpContext.User.Identity.Name && m.Authentication == this.HttpContext.User.Identity.AuthenticationType).ToList().FirstOrDefault();
             if (user == null)
             {

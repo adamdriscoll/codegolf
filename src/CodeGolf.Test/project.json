@@ -3,6 +3,7 @@
 
   "dependencies": {
     "CodeGolf": "1.0.0-*",
+    "Microsoft.Azure.DocumentDB": "1.10.0",
     "NSubstitute": "2.0.0-rc",
     "NUnit": "3.5.0",
     "NUnit3TestAdapter": "3.6.0"
