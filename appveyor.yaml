@@ -4,7 +4,7 @@ before_build:
 build:
   verbosity: minimal
 
-install:
+before_test:
   - ps: Start-FileDownload 'https://aka.ms/documentdb-emulator'
   - ps: msiexec.exe /i DocumentDB.Emulator.msi
   - ps: Start-Process 'C:\Program Files\Azure DocumentDB Emulator\DocumentDB.LocalEmulator.exe'
