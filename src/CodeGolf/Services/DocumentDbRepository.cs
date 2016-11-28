@@ -17,8 +17,11 @@ namespace CodeGolf.Services
         public async Task Initialize()
         {
             await Comments.Initialize();
+            await Users.Initialize();
         }
 
         public ICommentRepository Comments => new CommentRepository(_service.Client, _database);
+
+        public IUserRepository Users => new UserRepository(_service.Client, _database);
     }
 }

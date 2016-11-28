@@ -8,7 +8,7 @@ using NUnit.Framework;
 
 namespace CodeGolf.Test.Services
 {
-    [TestFixture, Category("DocumentDB")]
+    [TestFixture]
     public class DocumentVersionManagerTest
     {
         private DocumentDbService _service;
@@ -196,6 +196,88 @@ namespace CodeGolf.Test.Services
             Assert.IsFalse(FindLanguage("sql").SupportsValidation);
             Assert.IsFalse(FindLanguage("swift").SupportsValidation);
             Assert.IsFalse(FindLanguage("vb").SupportsValidation);
+        }
+
+        [Test]
+        public async Task ValidateVersion1_5_ShouldCreateUserInNewCollection()
+        {
+            var v10 = new Version1_0();
+            await v10.Step(_service);
+
+            var v11 = new Version1_1();
+            await v11.Step(_service);
+
+            var v12 = new Version1_2();
+            await v12.Step(_service);
+
+            var v13 = new Version1_3();
+            await v13.Step(_service);
+
+            var v14 = new Version1_4();
+            await v14.Step(_service);
+
+            var v15 = new Version1_5();
+            Assert.AreEqual(new Version(1,5), v15.Version);
+
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                Identity = "Adam"
+            };
+
+            await _service.Client.CreateDocumentAsync(_service.DatabaseUri, user);
+            
+            await v15.Step(_service);
+
+            var newUser = await _service.Repository.Users.Get(user.Id);
+
+            Assert.AreEqual(user.Identity, newUser.Identity);
+        }
+
+        [Test]
+        public async Task ValidateVersion1_5_ShouldDeleteUserFromOldCollection()
+        {
+            var v10 = new Version1_0();
+            await v10.Step(_service);
+
+            var v11 = new Version1_1();
+            await v11.Step(_service);
+
+            var v12 = new Version1_2();
+            await v12.Step(_service);
+
+            var v13 = new Version1_3();
+            await v13.Step(_service);
+
+            var v14 = new Version1_4();
+            await v14.Step(_service);
+
+            var v15 = new Version1_5();
+            Assert.AreEqual(new Version(1, 5), v15.Version);
+
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                Identity = "Adam"
+            };
+
+            await _service.Client.CreateDocumentAsync(_service.DatabaseUri, user);
+
+            var myUser =
+                await _service.Client.ReadDocumentAsync(UriFactory.CreateDocumentUri("CodeGolfDB", "CodeGolfCollection",
+                    user.Id.ToString()));
+                
+            Assert.IsNotNull(myUser);
+
+            await v15.Step(_service);
+
+            try
+            {
+                await _service.Client.ReadDocumentAsync(UriFactory.CreateDocumentUri("CodeGolfDB", "CodeGolfCollection",
+                    user.Id.ToString()));
+
+                Assert.Fail("Should not find resource.");
+            } catch { }
         }
 
 

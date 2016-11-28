@@ -5,41 +5,47 @@ using System.Threading.Tasks;
 using CodeGolf.Models;
 using CodeGolf.Services;
 using CodeGolf.ViewModels;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CodeGolf.Controllers
 {
-    public class ProfileController : Controller
+    public class ProfileController : AuthorizedController
     {
-        private DocumentDbService _documentDbService;
+        private readonly DocumentDbService _documentDbService;
 
-        public ProfileController(DocumentDbService documentDbService)
+        public ProfileController(DocumentDbService documentDbService) : base(documentDbService)
         {
             _documentDbService = documentDbService;
         }
 
-        public IActionResult Get(Guid? id)
+        [Route("/profile/{profile}")]
+        public async Task<IActionResult> Find(string profile)
         {
             var profileViewModel = new ProfileViewModel(this.HttpContext.User.Identity.IsAuthenticated, this.HttpContext.User.Identity.Name);
-
-            if (id.HasValue)
-            {
-                profileViewModel.User = _documentDbService.GetDocument<User>(id.Value);
-                if (profileViewModel.User == null)
-                {
-                    return NotFound();
-                }
-            }
-            else if (this.HttpContext.User.Identity.IsAuthenticated)
-            {
-                profileViewModel.User = _documentDbService.Client.CreateDocumentQuery<User>(_documentDbService.DatabaseUri).Where(m => m.Identity == this.HttpContext.User.Identity.Name && m.Authentication == this.HttpContext.User.Identity.AuthenticationType).ToList().FirstOrDefault();
-            }
-            else
+            if (string.IsNullOrEmpty(profile) && !HttpContext.User.Identity.IsAuthenticated)
             {
                 return NotFound();
             }
-            
+            else if (string.IsNullOrEmpty(profile) && HttpContext.User.Identity.IsAuthenticated)
+            {
+                profileViewModel.User = await GetRequestUser();
+            }
+            else if (!string.IsNullOrEmpty(profile))
+            {
+                var profiles = await _documentDbService.Repository.Users.Find(profile);
+                if (profiles.Count() > 1)
+                {
+                    throw new Exception("Expected one profile.");
+                }
+
+                profileViewModel.User = profiles.First();
+            }
+
+            return ReturnProfileView(profileViewModel);
+        }
+
+        private IActionResult ReturnProfileView(ProfileViewModel profileViewModel)
+        {
             var problemProfiles = new List<ProfileViewModel.ProblemProfile>();
             foreach (
                 var problem in

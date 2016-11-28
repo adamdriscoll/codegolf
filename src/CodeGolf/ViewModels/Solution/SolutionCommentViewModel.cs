@@ -1,7 +1,5 @@
 ﻿using System;
 using CodeGolf.Models;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Routing;
 
 namespace CodeGolf.ViewModels
 {
@@ -9,13 +7,13 @@ namespace CodeGolf.ViewModels
     {
         private readonly SolutionComment _comment;
 
-        public SolutionCommentViewModel(SolutionComment comment, string currentUser, IUrlHelper urlHelper)
+        public SolutionCommentViewModel(SolutionComment comment, string currentUser)
         {
             _comment = comment;
 
             DeleteCommentUrl = $"/solution/comment/{comment.Id}";
 
-            Commentor = new UserViewModel(comment.Commentor, currentUser, urlHelper);
+            Commentor = new UserViewModel(comment.Commentor, currentUser);
         }
 
         public Guid CommentId => _comment.Id;

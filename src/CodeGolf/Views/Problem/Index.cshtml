@@ -17,7 +17,7 @@
     name = Model.Name,
     authorAuthType = "github",
     authorName = Model.Author,
-    authorProfileUrl = Url.Action("Get", "Profile", Model.AuthorId),
+    authorProfileUrl = $"/profile/{Model.Author}",
     language = Model.Language.DisplayName,
     problemDescription = Model.Description,
     testCases = Model.TestCases,

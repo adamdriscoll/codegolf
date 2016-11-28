@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using CodeGolf.Models;
 using CodeGolf.Services;
 using CodeGolf.ViewModels;
@@ -17,18 +18,20 @@ namespace CodeGolf.Controllers
             _documentDbService = dbService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var recentProblems = GetRecentProblems();
-            var popularProblems = GetPopularProblems();
+            var recentProblems = await GetRecentProblems();
+            var popularProblems = await GetPopularProblems();
             var vm = new HomeViewModel(recentProblems, popularProblems, HttpContext.User.Identity.IsAuthenticated,
                 HttpContext.User.Identity.Name);
 
             return View(vm);
         }
 
-        private IEnumerable<RecentProblem> GetPopularProblems()
+        private async Task<IEnumerable<RecentProblem>> GetPopularProblems()
         {
+            var popularProblems = new List<RecentProblem>();
+
             var problems = _documentDbService.Client.CreateDocumentQuery<Problem>(_documentDbService.DatabaseUri)
                 .Where(m => m.Type == DocumentType.Problem)
                 .OrderByDescending(m => m.SolutionCount)
@@ -37,7 +40,7 @@ namespace CodeGolf.Controllers
             foreach (var problem in problems)
             {
                 var language = _documentDbService.GetDocument<Language>(problem.Language, true);
-                var author = _documentDbService.GetDocument<User>(problem.Author);
+                var author = await _documentDbService.Repository.Users.Get(problem.Author);
 
                 if (language == null)
                     throw new Exception("Language cannot be null.");
@@ -54,7 +57,7 @@ namespace CodeGolf.Controllers
                 if (topSolution != null)
                     topSolutionLength = topSolution.Length;
 
-                yield return new RecentProblem
+                popularProblems.Add(new RecentProblem
                 {
                     Name = problem.Name,
                     Id = problem.Id,
@@ -63,12 +66,16 @@ namespace CodeGolf.Controllers
                     SolutionCount = solutions.Count,
                     Author = author.Identity,
                     AuthorId = author.Id.ToString()
-                };
+                });
             }
+
+            return popularProblems;
         }
 
-        private IEnumerable<RecentProblem> GetRecentProblems()
+        private async Task<IEnumerable<RecentProblem>> GetRecentProblems()
         {
+            var popularProblems = new List<RecentProblem>();
+
             var problems = _documentDbService.Client.CreateDocumentQuery<Problem>(_documentDbService.DatabaseUri)
                 .Where(m => m.Type == DocumentType.Problem)
                 .OrderByDescending(m => m.DateAdded)
@@ -77,8 +84,8 @@ namespace CodeGolf.Controllers
             foreach (var problem in problems)
             {
                 var language = _documentDbService.GetDocument<Language>(problem.Language);
-                var author = _documentDbService.GetDocument<User>(problem.Author);
-                
+                var author = await _documentDbService.Repository.Users.Get(problem.Author);
+
                 if (language == null)
                     throw new Exception("Language cannot be null.");
 
@@ -94,7 +101,7 @@ namespace CodeGolf.Controllers
                 if (topSolution != null)
                     topSolutionLength = topSolution.Length;
 
-                yield return new RecentProblem
+                popularProblems.Add(new RecentProblem
                 {
                     Name = problem.Name,
                     Id = problem.Id,
@@ -103,22 +110,10 @@ namespace CodeGolf.Controllers
                     SolutionCount = solutions.Count,
                     Author = author.Identity,
                     AuthorId = author.Id.ToString()
-                };
+                });
             }
-        }
 
-        public IActionResult About()
-        {
-            ViewData["Message"] = "Your application description page.";
-
-            return View();
-        }
-
-        public IActionResult Contact()
-        {
-            ViewData["Message"] = "Your contact page.";
-
-            return View();
+            return popularProblems;
         }
 
         public IActionResult Error()

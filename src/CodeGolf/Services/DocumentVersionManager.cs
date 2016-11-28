@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CodeGolf.Models;
+using Microsoft.Azure.Documents.Client;
 
 namespace CodeGolf.Services
 {
@@ -20,6 +21,7 @@ namespace CodeGolf.Services
             _steps.Add(new Version1_2());
             _steps.Add(new Version1_3());
             _steps.Add(new Version1_4());
+            _steps.Add(new Version1_5());
         }
 
         public async Task Upgrade()
@@ -170,6 +172,24 @@ namespace CodeGolf.Services
         }
 
         public Version Version => new Version(1, 4);
+    }
+
+    public class Version1_5 : IDocumentUpgradeStep
+    {
+        public async Task Step(DocumentDbService dbService)
+        {
+            var users = dbService.Client.CreateDocumentQuery<User>(dbService.DatabaseUri)
+                .Where(m => m.Type == DocumentType.User)
+                .ToList();
+
+            foreach (var user in users)
+            {
+                await dbService.Repository.Users.Create(user);
+                await dbService.Client.DeleteDocumentAsync(UriFactory.CreateDocumentUri("CodeGolfDB", "CodeGolfCollection", user.Id.ToString()));
+            }
+        }
+
+        public Version Version => new Version(1, 5);
     }
 
     public interface IDocumentUpgradeStep

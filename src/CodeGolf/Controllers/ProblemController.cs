@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web;
 using CodeGolf.Models;
 using CodeGolf.Services;
 using CodeGolf.ViewModels;
@@ -17,26 +16,26 @@ namespace CodeGolf.Controllers
         {
         }
 
-        public IActionResult Single(string problemName)
+        public async Task<IActionResult> Single(string problemName)
         {
             var problem = DocumentDbService.Client.CreateDocumentQuery<Problem>(DocumentDbService.DatabaseUri)
                 .Where(m => m.Name.ToLower() == problemName.ToLower() && m.Type == DocumentType.Problem).ToList().FirstOrDefault();
 
-            return ShowProblem(problem);
+            return await ShowProblem(problem);
         }
 
         // GET: /<controller>/
-        public IActionResult Index(Guid id)
+        public async Task<IActionResult> Index(Guid id)
         {
             var problem = DocumentDbService.GetDocument<Problem>(id);
 
-            return ShowProblem(problem);
+            return await ShowProblem(problem);
         }
 
-        private IActionResult ShowProblem(Problem problem)
+        private async Task<IActionResult> ShowProblem(Problem problem)
         {
             if (problem == null) throw new Exception("Problem does not exist!");
-            var author = DocumentDbService.GetDocument<User>(problem.Author);
+            var author = await DocumentDbService.Repository.Users.Get(problem.Author);
             var language = DocumentDbService.GetDocument<Language>(problem.Language, true);
             
             return View("Index", new ProblemDetails(problem, author, language, HttpContext.User.Identity.IsAuthenticated,
@@ -53,8 +52,8 @@ namespace CodeGolf.Controllers
             foreach (var solution in solutions)
             {
                 var currentUserName = currentUser?.Identity;
-                var user = DocumentDbService.GetDocument<User>(solution.Author);
-                var userVm = new UserViewModel(user, currentUserName, Url);
+                var user = await DocumentDbService.Repository.Users.Get(solution.Author);
+                var userVm = new UserViewModel(user, currentUserName);
                 var svm = new SolutionDetail(solution, userVm, Url);
 
                 solutionDetails.Add(svm);
@@ -155,9 +154,9 @@ namespace CodeGolf.Controllers
         }
 
         [Authorize]
-        public IActionResult New()
+        public async Task<IActionResult> New()
         {
-            var user = GetRequestUser().Result;
+            var user = await GetRequestUser();
             var viewModel = new NewProblem(true, user.Identity);
            
             return View(viewModel);
@@ -175,16 +174,18 @@ namespace CodeGolf.Controllers
             return list;
         }
 
-        public IActionResult Search( string criteria)
+        public async Task<IActionResult> Search( string criteria)
         {
-            var recentProblems = SearchProblems(criteria);
+            var recentProblems = await SearchProblems(criteria);
             var vm = new SearchViewModel(criteria, recentProblems, HttpContext.User.Identity.IsAuthenticated, HttpContext.User.Identity.Name);
 
             return View(vm);
         }
 
-        private IEnumerable<RecentProblem> SearchProblems(string critieria)
+        private async Task<IEnumerable<RecentProblem>> SearchProblems(string critieria)
         {
+            var recentProblems = new List<RecentProblem>();
+
             var problems = DocumentDbService.Client.CreateDocumentQuery<Problem>(DocumentDbService.DatabaseUri)
                 .Where(m => m.Type == DocumentType.Problem && (m.Name.ToLower().Contains(critieria.ToLower()) || m.Description.ToLower().Contains(critieria.ToLower())))
                 .OrderByDescending(m => m.DateAdded)
@@ -193,7 +194,7 @@ namespace CodeGolf.Controllers
             foreach (var problem in problems)
             {
                 var language = DocumentDbService.GetDocument<Language>(problem.Language, true);
-                var author = DocumentDbService.GetDocument<User>(problem.Author);
+                var author = await DocumentDbService.Repository.Users.Get(problem.Author);
 
                 if (language == null)
                     throw new Exception("Language cannot be null.");
@@ -209,7 +210,7 @@ namespace CodeGolf.Controllers
                 if (topSolution != null)
                     topSolutionLength = topSolution.Length;
 
-                yield return new RecentProblem
+                recentProblems.Add(new RecentProblem
                 {
                     Name = problem.Name,
                     Id = problem.Id,
@@ -217,8 +218,10 @@ namespace CodeGolf.Controllers
                     ShortestSolution = topSolutionLength,
                     SolutionCount = solutions.Count,
                     Author = author.Identity
-                };
+                });
             }
+
+            return recentProblems;
         }
 
         [HttpGet]

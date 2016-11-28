@@ -1,25 +1,15 @@
 ﻿using CodeGolf.Models;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Routing;
 
 namespace CodeGolf.ViewModels
 {
     public class UserViewModel
     {
-        public UserViewModel(User user, string currentUser, IUrlHelper uriHelper)
+        public UserViewModel(User user, string currentUser)
         {
             Name = user.Identity;
             AuthType = user.Authentication;
             IsCurrentUser = currentUser == Name;
-
-            var ac = new UrlActionContext
-            {
-                Action = "Get",
-                Controller = "Profile",
-                Values = new {id = user.Id}
-            };
-
-            ProfileUrl = uriHelper.Action(ac);
+            ProfileUrl = $"/profile/{user.Identity}";
         }
 
         public bool IsCurrentUser { get; set; }

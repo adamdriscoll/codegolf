@@ -110,7 +110,7 @@ namespace CodeGolf.Controllers
                 UpvoteUrl = Url.Action("Upvote", new {itemId = id}),
                 DownvoteUrl = Url.Action("Downvote", new { itemId = id }),
                 AddCommentUrl = Url.Action("AddComment", new { id }),
-                Comments = comments.Select(m => new SolutionCommentViewModel(m, currentUserName, Url)),
+                Comments = comments.Select(m => new SolutionCommentViewModel(m, currentUserName)),
                 Votes = solution.Votes
                 //TODO: Langauge = solution.Language.Name
             };
@@ -138,7 +138,7 @@ namespace CodeGolf.Controllers
 
             return
                 DocumentDbService.Repository.Comments.GetSolutionComments(id)
-                    .Select(m => new SolutionCommentViewModel(m, currentUserName, Url));
+                    .Select(m => new SolutionCommentViewModel(m, currentUserName));
         }
 
         [Authorize]
@@ -170,7 +170,7 @@ namespace CodeGolf.Controllers
             var commentId = await DocumentDbService.Repository.Comments.AddSolutionComment(solutionComment);
             solutionComment.Id = new Guid(commentId);
 
-            return new SolutionCommentViewModel(solutionComment, currentUser.Identity, Url);
+            return new SolutionCommentViewModel(solutionComment, currentUser.Identity);
         }
 
         private async Task<int> Vote(Guid itemId, bool upvote)

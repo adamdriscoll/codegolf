@@ -6,5 +6,7 @@ namespace CodeGolf.Interfaces
     {
         Task Initialize();
         ICommentRepository Comments { get; }
+
+        IUserRepository Users { get; }
     }
 }

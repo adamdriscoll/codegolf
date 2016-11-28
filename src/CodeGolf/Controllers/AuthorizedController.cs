@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using CodeGolf.Models;
 using CodeGolf.Services;
@@ -21,16 +19,21 @@ namespace CodeGolf.Controllers
         {
             if (!HttpContext.User.Identity.IsAuthenticated) return null;
 
-            var user = DocumentDbService.Client.CreateDocumentQuery<User>(DocumentDbService.DatabaseUri).Where(m => m.Identity == this.HttpContext.User.Identity.Name && m.Authentication == this.HttpContext.User.Identity.AuthenticationType).ToList().FirstOrDefault();
+            var user =
+                await
+                    DocumentDbService.Repository.Users.Get(HttpContext.User.Identity.Name,
+                        HttpContext.User.Identity.AuthenticationType);
+
             if (user == null)
             {
                 user = new User
                 {
-                    Identity = this.HttpContext.User.Identity.Name,
-                    Authentication = this.HttpContext.User.Identity.AuthenticationType
+                    Id = Guid.NewGuid(),
+                    Identity = HttpContext.User.Identity.Name,
+                    Authentication = HttpContext.User.Identity.AuthenticationType
                 };
 
-                await DocumentDbService.CreateDocument(user);
+                await DocumentDbService.Repository.Users.Create(user);
             }
 
             return user;
