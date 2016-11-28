@@ -4,8 +4,6 @@ before_build:
 before_test:
 - ps: Start-FileDownload 'https://aka.ms/documentdb-emulator' -FileName 'C:\DocumentDB.Emulator.msi'
 - msiexec.exe /i C:\DocumentDB.Emulator.msi /quiet /qn /log install.log
-- ps: Start-Process 'C:\Program Files\DocumentDB Emulator\DocumentDB.LocalEmulator.exe'
+- ps: Start-Process 'C:\Program Files\DocumentDB Emulator\DocumentDB.Emulator.exe'
 build:
   verbosity: minimal
-on_finish:
-- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
