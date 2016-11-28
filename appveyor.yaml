@@ -1,9 +1,12 @@
 version: 1.0.{build}
 before_build:
 - cmd: dotnet restore
-test:
-  categories:
-    except:
-      - DocumentDB
 build:
   verbosity: minimal
+
+install:
+  - ps: Start-FileDownload 'https://aka.ms/documentdb-emulator'
+  - ps: msiexec.exe /i DocumentDB.Emulator.msi
+  - ps: Start-Process 'C:\Program Files\Azure DocumentDB Emulator\DocumentDB.LocalEmulator.exe'
+
+  
