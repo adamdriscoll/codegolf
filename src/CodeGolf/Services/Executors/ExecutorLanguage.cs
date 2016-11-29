@@ -13,6 +13,12 @@
         public string Help => "Use the Console.Write* to write output to the output window.";
     }
 
+    public class FSharpExecutorLanguage : IExecutorLanguage
+    {
+        public string Name => "F#";
+        public string Help => "Use the Console.Write* to write output to the output window.";
+    }
+
     public class JavaScriptExecutorLanguage : IExecutorLanguage
     {
         public string Name => "JavaScript";

@@ -19,6 +19,7 @@ namespace CodeGolf.Services.Executors
                 new PowerShellExecutor(azureFunctionsService),
                 new CSharpExecutor(azureFunctionsService),
                 new JavaScriptExecutor(azureFunctionsService), 
+                new FSharpExecutor(azureFunctionsService), 
             };
         }
 
