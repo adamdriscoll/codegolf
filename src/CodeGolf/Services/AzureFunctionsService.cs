@@ -26,7 +26,7 @@ namespace CodeGolf.Services
             _executionUrl = executionUrl;
         }
 
-        public async Task WriteFunctionJson(string path)
+        public async Task WriteFunctionJson(string path, string outParameter = "res")
         {
             var function = new Function();
             function.Bindings.Add(new HttpTriggerBinding
@@ -38,7 +38,7 @@ namespace CodeGolf.Services
 
             function.Bindings.Add(new HttpBinding
             {
-                Name = "res",
+                Name = outParameter,
                 Direction = "out"
             });
 

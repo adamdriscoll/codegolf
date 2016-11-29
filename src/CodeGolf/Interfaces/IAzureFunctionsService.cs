@@ -4,7 +4,7 @@ namespace CodeGolf.Interfaces
 {
     public interface IAzureFunctionsService
     {
-        Task WriteFunctionJson(string path);
+        Task WriteFunctionJson(string path, string outputParameter);
         Task<string> StartFunction(string name);
         Task UploadZip(string url, string name);
         Task DeleteFunction(string path);

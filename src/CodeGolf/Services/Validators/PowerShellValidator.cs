@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using CodeGolf.Interfaces;
 using CodeGolf.Models;
 using Newtonsoft.Json;
@@ -59,7 +58,7 @@ namespace CodeGolf.Services.Validators
 
             await _azureFunctionsService.WriteFile(pesterExecutionFile, FormatPesterExecutionFile(solutionId));
             await _azureFunctionsService.WriteFile(solutionFile, testContents);
-            await _azureFunctionsService.WriteFunctionJson(solutionFolder);
+            await _azureFunctionsService.WriteFunctionJson(solutionFolder, "res");
 
             return solutionId;
         }

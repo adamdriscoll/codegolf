@@ -6,18 +6,22 @@
             languages: [],
             content: "",
             output: "",
-            selectedLanguage: "",
+            selectedLanguageModel: null,
+            selectedLanguage: null,
             executing: false
         }
     }
 
     onLanguageChange(event) {
         this.state.selectedLanguage = event.target.value;
+        this.state.selectedLanguageModel = this.state.languages[event.target.value];
+        this.clearOutput();
+        this.writeOutput(this.state.selectedLanguageModel.help);
         this.setState(this.state);
     }
 
-    renderLanguageOptions(language) {
-        return <option value={language} key={language}>{language}</option>;
+    renderLanguageOptions(index, language) {
+        return <option value={index} key={language.name}>{language.name}</option>;
     }
 
     writeOutput(str) {
@@ -37,7 +41,7 @@
 
         this.state.executing = true;
         this.setState(this.state);
-
+        this.clearOutput();
         this.writeOutput("Executing....");
 
         const self = this;
@@ -45,7 +49,7 @@
         $.post(this.props.executeUrl,
             {
                 content: self.state.content,
-                language: self.state.selectedLanguage
+                language: self.state.selectedLanguageModel.name
             },
             function(result) {
                 self.writeOutput(result);
@@ -69,13 +73,16 @@
         $.get(this.props.languageUrl,
             function(data) {
                 self.state.languages = data;
-                self.state.selectedLanguage = data[0];
+                self.state.selectedLanguage = data[0].name;
+                self.state.selectedLanguageModel = data[0];
+                self.state.output = data[0].help;
                 self.setState(self.state);
             });
     }
 
     render() {
-        const languageOptions = this.state.languages.map((lang) => this.renderLanguageOptions(lang));
+        let index = 0;
+        const languageOptions = this.state.languages.map((lang) => this.renderLanguageOptions(index++, lang));
 
         let submitButton = <input className="btn btn-default" type="button" value="Execute" onClick={this.onExecute.bind(this) }/>;
         if (this.state.executing) {
