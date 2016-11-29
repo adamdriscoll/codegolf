@@ -1,12 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Security.Principal;
 
 namespace CodeGolf.ViewModels
 {
     public class AuthenticatedViewModel
     {
+        public AuthenticatedViewModel(IIdentity identity) : this(identity.IsAuthenticated, identity.Name)
+        {
+            
+        }
+
         public AuthenticatedViewModel(bool authenticated, string identity = null)
         {
             Authenticated = authenticated;

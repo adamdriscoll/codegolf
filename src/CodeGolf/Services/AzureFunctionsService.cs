@@ -63,7 +63,14 @@ namespace CodeGolf.Services
                 uriBuilder.Path += name;
 
                 var client = new HttpClient();
-                return await client.GetStringAsync(uriBuilder.Uri);
+                var executionTask = client.GetStringAsync(uriBuilder.Uri);
+
+                if (await Task.WhenAny(executionTask, Task.Delay(new TimeSpan(0, 0, 15))) == executionTask)
+                {
+                    return executionTask.Result;
+                }
+
+                throw new TimeoutException();
             }
             catch (HttpRequestException ex)
             {
