@@ -1,13 +1,12 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-using CodeGolf.Interfaces;
 using CodeGolf.Interfaces.Repository;
 using CodeGolf.Models;
 using Microsoft.Azure.Documents.Client;
 
-namespace CodeGolf.Services
+namespace CodeGolf.Services.Repository
 {
     public class UserRepository : IUserRepository
     {
@@ -47,6 +46,11 @@ namespace CodeGolf.Services
         public async Task Create(User user)
         {
             await _client.CreateDocumentAsync(_collectionUri, user);
+        }
+
+        public async Task Update(User user)
+        {
+            await _client.UpsertDocumentAsync(UriFactory.CreateDocumentCollectionUri(_databaseName, Collection), user);
         }
     }
 }

@@ -12,5 +12,6 @@ namespace CodeGolf.Interfaces.Repository
         Task<IEnumerable<User>> Find(string name);
         Task<User> Get(string identity, string provider);
         Task Create(User user);
+        Task Update(User user);
     }
 }
