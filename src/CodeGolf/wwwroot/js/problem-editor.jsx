@@ -22,8 +22,6 @@
         this.setState(this.state);
     }
     
-
-     
     onDescriptionContentChanged(content) {
         this.state.description = content;
         this.state.canSubmit = this.checkCanSubmit();

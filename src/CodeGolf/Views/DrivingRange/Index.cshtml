@@ -1,0 +1,27 @@
+﻿@using System.Threading.Tasks
+@{
+    ViewData["Title"] = "Code Golf - Driving Range";
+}
+
+<h4>Practice your skills on the driving range. Select a language and execute code on demand. </h4>
+
+@Html.React("DrivingRange", new
+{
+    executeUrl = "/drivingrange/execute",
+    languageUrl = "/drivingrange/languages"
+}, clientOnly:true)
+
+@section scripts {
+    <script language="javascript" src="~/lib/moment/moment.min.js"></script>
+    <script language="javascript" src="~/lib/highlight.js/lib/highlight.js"></script>
+    <script language="javascript" src="~/lib/react/react.min.js"></script>
+    <script language="javascript" src="~/lib/react-dom/react-dom.min.js"></script>
+    <script language="javascript" src="~/lib/monaco-editor/loader.js"></script>
+    <script language="javascript" src="~/js/monaco-editor.jsx"></script>
+    <script language="javascript" src="~/js/driving-range.jsx"></script>
+    @Html.ReactInitJavaScript(true)
+}
+
+@section css {
+    <link rel="stylesheet" href="~/lib/highlight.js/styles/default.css" />
+}
