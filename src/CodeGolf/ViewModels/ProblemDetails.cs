@@ -31,6 +31,7 @@ namespace CodeGolf.ViewModels
         public bool IsAuthor { get; set; }
         public bool EnforceOutput => _problem.EnforceOutput;
         public ICodeGolfLanguage Language { get; set; }
+        public string LanguageName { get; set; }
         public string SolutionHelp { get; set; }
         public bool Closed => _problem.Closed;
     }

@@ -30,6 +30,7 @@ namespace CodeGolf.Models
                 new JavaCodeGolfLanguage(), 
                 new JavaScriptCodeGolfLanguage(), 
                 new ObjectiveCCodeGolfLanguage(), 
+                new OtherCodeGolfLanguage("Other"),
                 new PowerShellCodeGolfLanguage(), 
                 new PythonCodeGolfLanguage(), 
                 new RCodeGolfLanguage(), 
@@ -44,8 +45,26 @@ namespace CodeGolf.Models
 
         public ICodeGolfLanguage Get(string name)
         {
-            return Languages.FirstOrDefault(m => m.Name == name);
+            var lang = Languages.FirstOrDefault(m => m.Name == name);
+            if (lang == null)
+            {
+                return new OtherCodeGolfLanguage(name);
+            }
+            return lang;
         }
+    }
+
+    public class OtherCodeGolfLanguage : ICodeGolfLanguage
+    {
+        public OtherCodeGolfLanguage(string name)
+        {
+            Name = name;
+        }
+
+        public string Name { get; }
+        public string Help => string.Empty;
+        public bool CanExecute => false;
+        public bool CanValidate => false;
     }
 
     public class BatCodeGolfLanguage : ICodeGolfLanguage

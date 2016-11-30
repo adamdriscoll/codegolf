@@ -25,7 +25,7 @@ namespace CodeGolf.Models
         public User AuthorModel { get; set; }
 
         public string LanguageName { get; set; }
-
+        public bool AnyLanguage { get; set; }
         public override DocumentType Type => DocumentType.Problem;
         public bool EnforceOutput { get; set; }
         public bool Closed { get; set; }

@@ -7,8 +7,6 @@
             description: "",
             testCases: [{ input: "", output: "" }],
             language: "",
-            selectedLanguage: null,
-            availableLanguages: [],
             enforceOutput: false,
             canSubmit: false,
             postUrl: props.postUrl,
@@ -28,17 +26,10 @@
         this.setState(this.state);
     }
 
-    onLanguageChange(event) {
-        this.state.language = event.target.value;
+    handleOnSelectedLanguageChanged(lang, langName) {
+        this.state.language = langName;
         this.state.canSubmit = this.checkCanSubmit();
-
-        this.state.availableLanguages.forEach(lang => {
-            if (lang.id === event.target.value) {
-                this.state.showEnforceCheckBox = lang.supportsValidation;
-                this.state.selectedLanguage = lang;
-            }
-        });
-
+        this.state.showEnforceCheckBox = lang.canValidate;
         this.setState(this.state);
     }
 
@@ -73,20 +64,10 @@
                 self.state.title = data.name;
                 self.state.description = data.description;
                 self.state.testCases = data.testCases;
-                self.state.language = data.language;
+                self.state.language = data.languageName;
                 self.setState(self.state);
             });
         }
-
-        $.get(this.props.languagesUrl,
-            function(data) {
-                self.state.availableLanguages = data;
-                self.setState(self.state);
-            });
-    }
-
-    renderLanguageOptions(language) {
-        return <option value={language.name} key={language.name}>{language.name}</option>;
     }
 
     onTestCaseChanged(testCaseIndex, input, output) {
@@ -131,8 +112,6 @@
     }
 
     render() {
-        const languageOptions = this.state.availableLanguages.map((lang) => this.renderLanguageOptions(lang));
-
         let testCaseIndex = 0;
         const testCases = this.state.testCases.map((testCase) => this.renderTestCaseEditor(testCaseIndex++, testCase));
 
@@ -157,12 +136,7 @@
                     <label htmlFor="name">Name</label>
                     <input type="text" className="form-control" placeholder="Name" value={this.state.title} onChange={this.onNameChanged.bind(this)} />
                 </div>
-                <div className="form-group">
-                    <label htmlFor="name">Language</label>
-                    <select className="form-control" value={this.state.language} onChange={this.onLanguageChange.bind(this)}>
-                        {languageOptions}
-                    </select>
-                </div>
+                <LanguageSelector languagesUrl={this.props.languagesUrl} onSelectedLanguageChanged={this.handleOnSelectedLanguageChanged.bind(this)} language={this.state.language}/>
                 <div className="form-group">
                     <label htmlFor="description">Description</label>
                     <br />

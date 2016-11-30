@@ -8,7 +8,7 @@ namespace CodeGolf.Models
 
         public int Length => Content.Length;
 
-        public Language Language { get; set; }
+        public string Language { get; set; }
 
         public Guid Problem { get; set; }
 
