@@ -29,6 +29,8 @@ namespace CodeGolf.Services.Repository
 
         public async Task Create(Problem problem)
         {
+            problem.DateAdded = DateTime.UtcNow;
+
             await _client.CreateDocumentAsync(UriFactory.CreateDocumentCollectionUri(_databaseName, Collection), problem);
         }
 
