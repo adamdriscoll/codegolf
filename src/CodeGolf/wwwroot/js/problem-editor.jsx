@@ -52,7 +52,9 @@
             });
         }
 
-        return titleSpecified && descriptionSpecified && testCaseOutputPopulated;
+        var languageCorrectLength = this.state.language.length < 15;
+
+        return titleSpecified && descriptionSpecified && testCaseOutputPopulated && languageCorrectLength;
     }
 
     componentWillMount() {

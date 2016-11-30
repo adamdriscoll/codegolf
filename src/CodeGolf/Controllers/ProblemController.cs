@@ -132,6 +132,9 @@ namespace CodeGolf.Controllers
             if (problem == null)
                 throw new ArgumentNullException(nameof(problem));
 
+            if (problem.LanguageName.Length > 15)  
+                throw new Exception("Language name cannot be over 15 characters.");
+
             if (string.IsNullOrEmpty(problem.Description) || string.IsNullOrWhiteSpace(problem.Name)  || !problem.TestCases.Any())
                 throw new Exception("All details are required to create a problem");
 
