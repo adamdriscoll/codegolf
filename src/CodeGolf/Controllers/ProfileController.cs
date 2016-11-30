@@ -65,7 +65,7 @@ namespace CodeGolf.Controllers
                 problemProfiles.Add(new ProfileViewModel.ProblemProfile
                 {
                     Id = problem.Id.ToString(),
-                    Language = problem.LanguageModel.DisplayName,
+                    Language = problem.LanguageName,
                     Solutions = problem.SolutionCount,
                     Name = problem.Name
                 });
@@ -85,7 +85,7 @@ namespace CodeGolf.Controllers
                     Problem = problem.Name,
                     ProblemId = problem.Id.ToString(),
                     Length = solution.Length,
-                    Language = problem.LanguageModel.DisplayName
+                    Language = problem.LanguageName
 
                 });
             }

@@ -12,6 +12,7 @@ namespace CodeGolf.Test.Services
     public class DocumentVersionManagerTest
     {
         private DocumentDbService _service;
+        private DocumentVersionManager _manager;
 
         [SetUp]
         public async Task SetUp()
@@ -24,6 +25,8 @@ namespace CodeGolf.Test.Services
             await _service.Client.CreateDatabaseIfNotExists("CodeGolfDB");
             await _service.Client.CreateDocumentCollectionIfNotExists("CodeGolfDB", "CodeGolfCollection");
             await _service.Repository.Initialize();
+
+            _manager = new DocumentVersionManager(_service);
         }
 
         [TearDown]
@@ -90,11 +93,7 @@ namespace CodeGolf.Test.Services
         [Test]
         public async Task ValidateVersion1_2()
         {
-            var v10 = new Version1_0();
-            await v10.Step(_service);
-
-            var v11 = new Version1_1();
-            await v11.Step(_service);
+            await _manager.Upgrade(new Version(1, 1));
 
             var v12 = new Version1_2();
             Assert.AreEqual(new Version(1,2), v12.Version);
@@ -117,14 +116,7 @@ namespace CodeGolf.Test.Services
         [Test]
         public async Task ValidateVersion1_3()
         {
-            var v10 = new Version1_0();
-            await v10.Step(_service);
-
-            var v11 = new Version1_1();
-            await v11.Step(_service);
-
-            var v12 = new Version1_2();
-            await v12.Step(_service);
+            await _manager.Upgrade(new Version(1, 2));
 
             //Duplicate all the languages
             foreach (var language in _service.Client.CreateDocumentQuery<Language>(_service.DatabaseUri))
@@ -159,17 +151,7 @@ namespace CodeGolf.Test.Services
         [Test]
         public async Task ValidateVersion1_4()
         {
-            var v10 = new Version1_0();
-            await v10.Step(_service);
-
-            var v11 = new Version1_1();
-            await v11.Step(_service);
-
-            var v12 = new Version1_2();
-            await v12.Step(_service);
-
-            var v13 = new Version1_3();
-            await v13.Step(_service);
+            await _manager.Upgrade(new Version(1, 3));
 
             var v14 = new Version1_4();
             Assert.AreEqual(new Version(1,4), v14.Version);
@@ -197,20 +179,7 @@ namespace CodeGolf.Test.Services
         [Test]
         public async Task ValidateVersion1_5_ShouldCreateUserInNewCollection()
         {
-            var v10 = new Version1_0();
-            await v10.Step(_service);
-
-            var v11 = new Version1_1();
-            await v11.Step(_service);
-
-            var v12 = new Version1_2();
-            await v12.Step(_service);
-
-            var v13 = new Version1_3();
-            await v13.Step(_service);
-
-            var v14 = new Version1_4();
-            await v14.Step(_service);
+            await _manager.Upgrade(new Version(1, 4));
 
             var v15 = new Version1_5();
             Assert.AreEqual(new Version(1,5), v15.Version);
@@ -233,20 +202,7 @@ namespace CodeGolf.Test.Services
         [Test]
         public async Task ValidateVersion1_5_ShouldDeleteUserFromOldCollection()
         {
-            var v10 = new Version1_0();
-            await v10.Step(_service);
-
-            var v11 = new Version1_1();
-            await v11.Step(_service);
-
-            var v12 = new Version1_2();
-            await v12.Step(_service);
-
-            var v13 = new Version1_3();
-            await v13.Step(_service);
-
-            var v14 = new Version1_4();
-            await v14.Step(_service);
+            await _manager.Upgrade(new Version(1, 4));
 
             var v15 = new Version1_5();
             Assert.AreEqual(new Version(1, 5), v15.Version);
@@ -279,23 +235,7 @@ namespace CodeGolf.Test.Services
         [Test]
         public async Task ValidateVersion1_6_ShouldCreateProblemInNewCollection()
         {
-            var v10 = new Version1_0();
-            await v10.Step(_service);
-
-            var v11 = new Version1_1();
-            await v11.Step(_service);
-
-            var v12 = new Version1_2();
-            await v12.Step(_service);
-
-            var v13 = new Version1_3();
-            await v13.Step(_service);
-
-            var v14 = new Version1_4();
-            await v14.Step(_service);
-
-            var v15 = new Version1_5();
-            await v15.Step(_service);
+            await _manager.Upgrade(new Version(1, 5));
 
             var v16 = new Version1_6();
             Assert.AreEqual(new Version(1, 6), v16.Version);
@@ -318,23 +258,7 @@ namespace CodeGolf.Test.Services
         [Test]
         public async Task ValidateVersion1_6_ShouldSetLanguageOnNewProblem()
         {
-            var v10 = new Version1_0();
-            await v10.Step(_service);
-
-            var v11 = new Version1_1();
-            await v11.Step(_service);
-
-            var v12 = new Version1_2();
-            await v12.Step(_service);
-
-            var v13 = new Version1_3();
-            await v13.Step(_service);
-
-            var v14 = new Version1_4();
-            await v14.Step(_service);
-
-            var v15 = new Version1_5();
-            await v15.Step(_service);
+            await _manager.Upgrade(new Version(1, 5));
 
             var v16 = new Version1_6();
             Assert.AreEqual(new Version(1, 6), v16.Version);
@@ -358,23 +282,7 @@ namespace CodeGolf.Test.Services
         [Test]
         public async Task ValidateVersion1_6_ShouldDeleteProblemFromOldCollection()
         {
-            var v10 = new Version1_0();
-            await v10.Step(_service);
-
-            var v11 = new Version1_1();
-            await v11.Step(_service);
-
-            var v12 = new Version1_2();
-            await v12.Step(_service);
-
-            var v13 = new Version1_3();
-            await v13.Step(_service);
-
-            var v14 = new Version1_4();
-            await v14.Step(_service);
-
-            var v15 = new Version1_5();
-            await v15.Step(_service);
+            await _manager.Upgrade(new Version(1, 5));
 
             var v16 = new Version1_6();
             Assert.AreEqual(new Version(1, 6), v16.Version);
@@ -403,6 +311,56 @@ namespace CodeGolf.Test.Services
                 Assert.Fail("Should not find resource.");
             }
             catch { }
+        }
+
+        [Test]
+        public async Task ValidateVersion1_7_ShouldUpdateLanguageOnProblems()
+        {
+            await _manager.Upgrade(new Version(1, 6));
+
+            var v17 = new Version1_7();
+            Assert.AreEqual(new Version(1,7), v17.Version);
+
+            var problem = new Problem
+            {
+                Id = Guid.NewGuid(),
+                Description = "My Problem",
+                Language = FindLanguage("csharp").Id,
+                LanguageModel = FindLanguage("csharp")
+            };
+
+            await _service.Repository.Problem.Create(problem);
+            await v17.Step(_service);
+
+            var updatedProblem = await _service.Repository.Problem.Get(problem.Id);
+
+            Assert.IsNull(updatedProblem.LanguageModel);
+        }
+
+        [Test]
+        public async Task ValidateVersion1_7_ShouldDeleteLanguagesFromDatabase()
+        {
+            await _manager.Upgrade(new Version(1, 6));
+
+            var v17 = new Version1_7();
+            Assert.AreEqual(new Version(1, 7), v17.Version);
+
+            var problem = new Problem
+            {
+                Id = Guid.NewGuid(),
+                Description = "My Problem",
+                Language = FindLanguage("csharp").Id,
+                LanguageModel = FindLanguage("csharp")
+            };
+
+            await _service.Repository.Problem.Create(problem);
+            await v17.Step(_service);
+
+            var anyLanguages =
+                _service.Client.CreateDocumentQuery<Language>(_service.DatabaseUri)
+                    .Where(m => m.Type == DocumentType.Language).ToList().Any();
+
+            Assert.IsFalse(anyLanguages);
         }
 
         private Language FindLanguage(string name)

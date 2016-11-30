@@ -83,6 +83,7 @@ namespace CodeGolf
             ConfigureAzureFunctionService(services);
             
             services.AddTransient<ProblemValidatorService>();
+            services.AddTransient<LanguageFactory>();
         }
 
         public void ConfigureAzureFunctionService(IServiceCollection services)

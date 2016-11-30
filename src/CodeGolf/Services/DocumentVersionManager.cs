@@ -23,9 +23,10 @@ namespace CodeGolf.Services
             _steps.Add(new Version1_4());
             _steps.Add(new Version1_5());
             _steps.Add(new Version1_6());
+            _steps.Add(new Version1_7());
         }
 
-        public async Task Upgrade()
+        public async Task Upgrade(Version maxVersion = null)
         {
             DocumentVersion version;
             try
@@ -51,6 +52,11 @@ namespace CodeGolf.Services
 
             foreach (var step in _steps)
             {
+                if (maxVersion != null && Version.Parse(version.Version) == maxVersion)
+                {
+                    continue;
+                }
+
                 if (Version.Parse(version.Version) >= step.Version)
                 {
                     continue;
@@ -213,6 +219,33 @@ namespace CodeGolf.Services
 
         public Version Version => new Version(1, 6);
     }
+
+    public class Version1_7 : IDocumentUpgradeStep
+    {
+        public async Task Step(DocumentDbService dbService)
+        {
+            var problems = await dbService.Repository.Problem.Get();
+
+            foreach (var problem in problems)
+            {
+                problem.LanguageName = problem.LanguageModel.DisplayName;
+                problem.LanguageModel = null;
+                await dbService.Repository.Problem.Update(problem);
+            }
+
+            var languages =
+                dbService.Client.CreateDocumentQuery<Language>(dbService.DatabaseUri)
+                    .Where(m => m.Type == DocumentType.Language);
+
+            foreach (var language in languages)
+            {
+                await dbService.DeleteDocument(language.Id);
+            }
+        }
+
+        public Version Version => new Version(1, 7);
+    }
+
 
     public interface IDocumentUpgradeStep
     {

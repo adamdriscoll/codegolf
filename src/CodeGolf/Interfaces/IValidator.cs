@@ -8,7 +8,7 @@ namespace CodeGolf.Interfaces
 {
     public interface IValidator
     {
-        string Language { get; }
+        ICodeGolfLanguage Language { get; }
 
         Task<ValidationResult> Validate(Problem problem, string solution);
     }

@@ -32,6 +32,12 @@ namespace CodeGolf.Services.Repository
             await _client.CreateDocumentAsync(UriFactory.CreateDocumentCollectionUri(_databaseName, Collection), problem);
         }
 
+        public async Task<IEnumerable<Problem>> Get()
+        {
+            return _client.CreateDocumentQuery<Problem>(_collectionUri);
+        }
+
+
         public async Task<Problem> Get(string name)
         {
             return _client.CreateDocumentQuery<Problem>(_collectionUri).Where(m => m.Name.ToLower() == name.ToLower()).ToList().FirstOrDefault();

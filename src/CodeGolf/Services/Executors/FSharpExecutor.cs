@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CodeGolf.Interfaces;
+using CodeGolf.Models;
 
 namespace CodeGolf.Services.Executors
 {
@@ -33,6 +34,6 @@ namespace CodeGolf.Services.Executors
         }
 
         protected override string FileName => "run.fsx";
-        public override IExecutorLanguage Language => new FSharpExecutorLanguage();
+        public override ICodeGolfLanguage Language => new FSharpCodeGolfLanguage();
     }
 }

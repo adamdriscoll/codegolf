@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using CodeGolf.Models;
 using CodeGolf.Services;
 using CodeGolf.Services.Executors;
 using CodeGolf.ViewModels;
@@ -31,7 +32,7 @@ namespace CodeGolf.Controllers
         }
 
         [Route("/drivingrange/languages")]
-        public IEnumerable<IExecutorLanguage> GetLanguages()
+        public IEnumerable<ICodeGolfLanguage> GetLanguages()
         {
             return _executorFactory.Languages.OrderBy(m => m.Name);
         }

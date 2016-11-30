@@ -18,7 +18,7 @@ namespace CodeGolf.Services.Validators
             _azureFunctionsService = azureFunctionsService;
         }
 
-        public string Language { get; } = "PowerShell";
+        public ICodeGolfLanguage Language { get; } = new PowerShellCodeGolfLanguage();
 
         private static bool IsEmptyInput(string input)
         {
@@ -49,7 +49,7 @@ namespace CodeGolf.Services.Validators
                 index++;
             }
 
-            var solutionId = Language + Guid.NewGuid();
+            var solutionId = Language.Name + Guid.NewGuid();
 
             var solutionFolder = $"/{solutionId}/";
             var solutionFile = $"{solutionFolder}run.tests.ps1";

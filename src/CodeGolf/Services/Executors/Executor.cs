@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CodeGolf.Interfaces;
+using CodeGolf.Models;
 using Newtonsoft.Json;
 
 namespace CodeGolf.Services.Executors
@@ -31,7 +32,7 @@ namespace CodeGolf.Services.Executors
             return await executor.Execute(text);
         }
 
-        public IEnumerable<IExecutorLanguage> Languages => _executors.Select(m => m.Language);
+        public IEnumerable<ICodeGolfLanguage> Languages => _executors.Select(m => m.Language);
     }
 
     public abstract class Executor
@@ -44,7 +45,7 @@ namespace CodeGolf.Services.Executors
 
         protected abstract string FileName { get; }
 
-        public abstract IExecutorLanguage Language { get; }
+        public abstract ICodeGolfLanguage Language { get; }
 
         protected virtual string FormatCode(string text)
         {

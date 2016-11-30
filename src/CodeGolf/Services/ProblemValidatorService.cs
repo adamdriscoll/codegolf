@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using CodeGolf.Interfaces;
 using CodeGolf.Models;
@@ -24,7 +23,7 @@ namespace CodeGolf.Services
 
         public async Task<ValidationResult> Validate(string language, Problem problem, string solution)
         {
-            var validator = _validators.FirstOrDefault(m => m.Language.Equals(language, StringComparison.OrdinalIgnoreCase));
+            var validator = _validators.FirstOrDefault(m => m.Language.Name.Equals(language, StringComparison.OrdinalIgnoreCase));
             if (validator != null)
                 return await validator.Validate(problem, solution);
 

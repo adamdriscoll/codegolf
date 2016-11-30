@@ -9,6 +9,7 @@ namespace CodeGolf.Interfaces.Repository
     {
         Task Initialize();
         Task Create(Problem problem);
+        Task<IEnumerable<Problem>> Get();
         Task<Problem> Get(string name);
         Task<Problem> Get(Guid id);
         Task<IEnumerable<Problem>> Find(string text);

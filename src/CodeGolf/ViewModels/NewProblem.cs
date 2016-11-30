@@ -9,6 +9,6 @@ namespace CodeGolf.ViewModels
         {
         }
 
-        public IEnumerable<Language> Languages { get; set; }
+        public IEnumerable<ICodeGolfLanguage> Languages { get; set; }
     }
 }

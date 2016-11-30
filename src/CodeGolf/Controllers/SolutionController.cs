@@ -63,7 +63,7 @@ namespace CodeGolf.Controllers
         public async Task<ValidationResult> ValidateAsync(Guid problem, string content)
         {
             var theProblem = await DocumentDbService.Repository.Problem.Get(problem);
-            return await _problemValidatorService.Validate(theProblem.LanguageModel.Name, theProblem, content);
+            return await _problemValidatorService.Validate(theProblem.LanguageName, theProblem, content);
         } 
 
         [Authorize]

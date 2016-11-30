@@ -16,7 +16,7 @@ namespace CodeGolf.Services.Validators
             _azureFunctionsService = azureFunctionsService;
         }
 
-        public string Language { get; } = "CSharp";
+        public ICodeGolfLanguage Language { get; } = new CSharpCodeGolfLanguage();
 
         public async Task<ValidationResult> Validate(Problem problem, string solution)
         {
@@ -39,7 +39,7 @@ namespace CodeGolf.Services.Validators
 
                 solutionContent += solution;
 
-                var solutionId = Language + Guid.NewGuid();
+                var solutionId = Language.Name + Guid.NewGuid();
                 await _azureFunctionsService.WriteCSharpFunction("/" + solutionId + "/", solutionContent);
                 Thread.Sleep(500);
                 var output = await _azureFunctionsService.StartFunction(solutionId.ToString());

@@ -1,4 +1,5 @@
 ﻿using CodeGolf.Interfaces;
+using CodeGolf.Models;
 
 namespace CodeGolf.Services.Executors
 {
@@ -20,7 +21,7 @@ namespace CodeGolf.Services.Executors
                     ";
         }
 
-        public override IExecutorLanguage Language => new PowerShellExecutorLanguage();
+        public override ICodeGolfLanguage Language => new PowerShellCodeGolfLanguage();
         protected override string FileName => "run.ps1";
         
     }

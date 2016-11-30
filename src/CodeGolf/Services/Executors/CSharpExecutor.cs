@@ -1,4 +1,5 @@
 ﻿using CodeGolf.Interfaces;
+using CodeGolf.Models;
 
 namespace CodeGolf.Services.Executors
 {
@@ -40,7 +41,7 @@ namespace CodeGolf.Services.Executors
                     ";
         }
 
-        public override IExecutorLanguage Language => new CSharpExecutorLanguage();
+        public override ICodeGolfLanguage Language => new CSharpCodeGolfLanguage();
         protected override string FileName => "run.csx";
         
     }

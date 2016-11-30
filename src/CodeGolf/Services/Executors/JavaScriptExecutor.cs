@@ -1,4 +1,5 @@
 ﻿using CodeGolf.Interfaces;
+using CodeGolf.Models;
 
 namespace CodeGolf.Services.Executors
 {
@@ -29,6 +30,6 @@ namespace CodeGolf.Services.Executors
 
         protected override string FileName => "index.js";
         protected override string OutputParameter => "$return";
-        public override IExecutorLanguage Language => new JavaScriptExecutorLanguage();
+        public override ICodeGolfLanguage Language => new JavaScriptCodeGolfLanguage();
     }
 }

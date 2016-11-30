@@ -86,7 +86,7 @@
     }
 
     renderLanguageOptions(language) {
-        return <option value={language.id} key={language.id}>{language.displayName}</option>;
+        return <option value={language.name} key={language.name}>{language.name}</option>;
     }
 
     onTestCaseChanged(testCaseIndex, input, output) {
@@ -122,7 +122,7 @@
             name: this.state.title,
             description: this.state.description,
             testCases: this.state.testCases,
-            language: this.state.language,
+            languageName: this.state.language,
             enforceOutput: this.state.enforceOutput
         },
             function(data) {

@@ -51,7 +51,7 @@ namespace CodeGolf.Controllers
                 {
                     Name = problem.Name,
                     Id = problem.Id,
-                    Language = problem.LanguageModel.DisplayName,
+                    Language = problem.LanguageName,
                     ShortestSolution = topSolutionLength,
                     SolutionCount = solutions.Count,
                     Author = problem.AuthorModel.Identity,
@@ -86,7 +86,7 @@ namespace CodeGolf.Controllers
                 {
                     Name = problem.Name,
                     Id = problem.Id,
-                    Language = problem.LanguageModel.DisplayName,
+                    Language = problem.LanguageName,
                     ShortestSolution = topSolutionLength,
                     SolutionCount = solutions.Count,
                     Author = problem.AuthorModel.Identity,

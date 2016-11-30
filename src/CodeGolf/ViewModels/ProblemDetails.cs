@@ -7,7 +7,7 @@ namespace CodeGolf.ViewModels
     {
         private readonly Problem _problem;
 
-        public ProblemDetails(Problem problem, User author, Language language, bool authenticated, string identity) : base(authenticated, identity)
+        public ProblemDetails(Problem problem, User author, ICodeGolfLanguage language, bool authenticated, string identity) : base(authenticated, identity)
         {
             _problem = problem;
             Author = author.Identity;
@@ -30,7 +30,7 @@ namespace CodeGolf.ViewModels
         public string AuthorId { get; set; }
         public bool IsAuthor { get; set; }
         public bool EnforceOutput => _problem.EnforceOutput;
-        public Language Language { get; set; }
+        public ICodeGolfLanguage Language { get; set; }
         public string SolutionHelp { get; set; }
         public bool Closed => _problem.Closed;
     }

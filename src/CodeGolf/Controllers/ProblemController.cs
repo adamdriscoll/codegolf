@@ -12,8 +12,10 @@ namespace CodeGolf.Controllers
 {
     public class ProblemController : AuthorizedController
     {
-        public ProblemController(DocumentDbService dbService) : base(dbService)
+        private readonly LanguageFactory _languageFactory;
+        public ProblemController(DocumentDbService dbService, LanguageFactory factory) : base(dbService)
         {
+            _languageFactory = factory;
         }
 
         public async Task<IActionResult> Single(string problemName)
@@ -34,10 +36,10 @@ namespace CodeGolf.Controllers
         {
             if (problem == null) throw new Exception("Problem does not exist!");
             var author = await DocumentDbService.Repository.Users.Get(problem.Author);
-            var language = DocumentDbService.GetDocument<Language>(problem.Language, true);
-            
-            return View("Index", new ProblemDetails(problem, author, language, HttpContext.User.Identity.IsAuthenticated,
-                HttpContext.User.Identity.Name));
+
+            var language = _languageFactory.Get(problem.LanguageName);
+
+            return View("Index", new ProblemDetails(problem, author, language, HttpContext.User.Identity.IsAuthenticated, HttpContext.User.Identity.Name));
         }
 
         public async Task<IEnumerable<SolutionDetail>> Solution(Guid id)
@@ -97,8 +99,7 @@ namespace CodeGolf.Controllers
 
             existingProblem.TestCases = problem.TestCases;
             existingProblem.Description = problem.Description;
-            existingProblem.Language = problem.Language;
-            existingProblem.LanguageModel = DocumentDbService.GetDocument<Language>(problem.Language);
+            existingProblem.LanguageName = problem.LanguageName;
             existingProblem.Name = problem.Name;
 
             await DocumentDbService.Repository.Problem.Update(existingProblem);
@@ -139,7 +140,6 @@ namespace CodeGolf.Controllers
             problem.Id = Guid.NewGuid();
             problem.Author = currentUser.Id;
             problem.AuthorModel = currentUser;
-            problem.LanguageModel = DocumentDbService.GetDocument<Language>(problem.Language);
 
             await DocumentDbService.Repository.Problem.Create(problem);
 
@@ -147,11 +147,11 @@ namespace CodeGolf.Controllers
         }
 
         [HttpGet]
-        public async Task<Language> Language(Guid id)
+        public async Task<ICodeGolfLanguage> Language(Guid id)
         {
             var problem = await DocumentDbService.Repository.Problem.Get(id);
 
-            return DocumentDbService.GetDocument<Language>(problem.Id, true);
+            return _languageFactory.Get(problem.LanguageName);
         }
 
         [Authorize]
@@ -200,7 +200,7 @@ namespace CodeGolf.Controllers
                 {
                     Name = problem.Name,
                     Id = problem.Id,
-                    Language = problem.LanguageModel.DisplayName,
+                    Language = problem.LanguageName,
                     ShortestSolution = topSolutionLength,
                     SolutionCount = solutions.Count,
                     Author = problem.AuthorModel.Identity
