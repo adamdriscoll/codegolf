@@ -13,10 +13,10 @@ namespace CodeGolf.Services
 {
     public class AzureFunctionsService : IAzureFunctionsService
     {
-        private string _url;
-        private string _username;
-        private string _password;
-        private string _executionUrl;
+        private readonly string _url;
+        private readonly string _username;
+        private readonly string _password;
+        private readonly string _executionUrl;
 
         public AzureFunctionsService(string url, string username, string password, string executionUrl)
         {
@@ -45,15 +45,15 @@ namespace CodeGolf.Services
             var output = JsonConvert.SerializeObject(function);
 
             var client = new HttpClient();
-
-            var byteArray = Encoding.ASCII.GetBytes(_username + ":" + _password);
-            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+            SetClientAuthorization(client);
 
             var uriBuilder = new UriBuilder(_url);
             uriBuilder.Path = "api/vfs/site/wwwroot/" + path.Replace("\\", "/") + "/function.json";
 
             await client.PutAsync(uriBuilder.Uri, new StringContent(output));
         }
+
+
 
         public async Task<string> StartFunction(string name)
         {
@@ -81,9 +81,7 @@ namespace CodeGolf.Services
         public async Task UploadZip(string url, string name)
         {
             var client = new HttpClient();
-
-            var byteArray = Encoding.ASCII.GetBytes(_username + ":" + _password);
-            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+            SetClientAuthorization(client);
 
             var uriBuilder = new UriBuilder(_url);
             uriBuilder.Path = $"api/zip/";
@@ -104,57 +102,10 @@ namespace CodeGolf.Services
             };
 
             request.Headers.IfMatch.Add(EntityTagHeaderValue.Any);
-            
-            var byteArray = Encoding.ASCII.GetBytes(_username + ":" + _password);
-            request.Headers.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+            SetClientAuthorization(client);
 
             var response = await client.SendAsync(request);
             var data = response.Content.ReadAsStringAsync().Result;
-        }
-
-        public async Task WriteCSharpFunction(string path, string content)
-        {
-            var body = $@"
-                using System.Net;
-using System.Threading.Tasks;
-using System.Text;
-using System.Linq;
-
-public class Solution {{
-    private StringBuilder sb;
-    public Solution()
-    {{
-        sb = new StringBuilder();
-    }}
-
-    private void o(string text)
-    {{
-        sb.AppendLine(text);
-    }}
-
-    public void Run()
-    {{
-        {content}
-    }}
-
-    public override string ToString()
-    {{
-        return sb.ToString();
-    }}
-}}
-
-public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceWriter log)
-{{
-    var solution = new Solution();
-    solution.Run();
-
-    return req.CreateResponse(HttpStatusCode.OK, solution.ToString());
-}}
-
-            ";
-
-            await WriteFile(path.Replace("\\", "/") + "run.csx", body);
-            await WriteFunctionJson(path);
         }
 
         public async Task WriteFile(string path, string content)
@@ -162,11 +113,15 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
             var uriBuilder = new UriBuilder(_url);
             uriBuilder.Path = "api/vfs/site/wwwroot/" + path.Replace("\\", "/");
             var client = new HttpClient();
-
-            var byteArray = Encoding.ASCII.GetBytes(_username + ":" + _password);
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
-
+            SetClientAuthorization(client);
             await client.PutAsync(uriBuilder.Uri, new StringContent(content));
+        }
+
+        private void SetClientAuthorization(HttpClient client)
+        {
+            var byteArray = Encoding.ASCII.GetBytes(_username + ":" + _password);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic",
+                Convert.ToBase64String(byteArray));
         }
     }
 

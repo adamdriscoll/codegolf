@@ -49,7 +49,7 @@ namespace CodeGolf.Services.Validators
                 index++;
             }
 
-            var solutionId = Language.Name + Guid.NewGuid();
+            var solutionId = "PowerShell" + Guid.NewGuid();
 
             var solutionFolder = $"/{solutionId}/";
             var solutionFile = $"{solutionFolder}run.tests.ps1";

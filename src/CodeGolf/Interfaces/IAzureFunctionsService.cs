@@ -9,6 +9,5 @@ namespace CodeGolf.Interfaces
         Task UploadZip(string url, string name);
         Task DeleteFunction(string path);
         Task WriteFile(string path, string content);
-        Task WriteCSharpFunction(string path, string content);
     }
 }

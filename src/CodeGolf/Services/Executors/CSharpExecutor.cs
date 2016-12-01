@@ -18,6 +18,10 @@ namespace CodeGolf.Services.Executors
                 using System.Linq;
                 using System.IO;
 
+                public static void o(object value) {{
+                    Console.WriteLine(value);
+                }}
+
                 public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceWriter log)
                 {{
                     StringBuilder sb = new StringBuilder();

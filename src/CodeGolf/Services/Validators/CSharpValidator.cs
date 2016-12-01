@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CodeGolf.Interfaces;
 using CodeGolf.Models;
+using CodeGolf.Services.Executors;
 
 namespace CodeGolf.Services.Validators
 {
@@ -39,14 +40,8 @@ namespace CodeGolf.Services.Validators
 
                 solutionContent += solution;
 
-                var solutionId = Language.Name + Guid.NewGuid();
-                await _azureFunctionsService.WriteCSharpFunction("/" + solutionId + "/", solutionContent);
-                Thread.Sleep(500);
-                var output = await _azureFunctionsService.StartFunction(solutionId.ToString());
-
-                output = output.Trim('"').Replace("\\r\\n", Environment.NewLine);
-
-                await _azureFunctionsService.DeleteFunction("/" + solutionId);
+                var csharpExectuor = new CSharpExecutor(_azureFunctionsService);
+                var output=  await csharpExectuor.Execute(solutionContent);
 
                 testCaseResults.Add(new TestCaseResult(testCase.Output, output.Trim()));
             }
