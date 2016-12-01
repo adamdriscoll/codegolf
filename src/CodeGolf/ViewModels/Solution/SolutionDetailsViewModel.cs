@@ -12,5 +12,7 @@ namespace CodeGolf.ViewModels
         public string AddCommentUrl { get; set; }
         public int Votes { get; set; }
         public IEnumerable<SolutionCommentViewModel> Comments { get; set; }
+        public string Language { get; set; }
+
     }
 }

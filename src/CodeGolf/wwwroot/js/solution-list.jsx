@@ -78,7 +78,6 @@ class SolutionViewer extends React.Component {
         $.get(this.props.solutionUrl,
             function (data) {
                 self.state.content = data.content;
-                self.state.langauge = data.language;
                 self.state.downvoteUrl = data.downvoteUrl;
                 self.state.upvoteUrl = data.upvoteUrl;
                 self.state.addCommentUrl = data.addCommentUrl;
@@ -146,7 +145,7 @@ class SolutionViewer extends React.Component {
                     <div className="modal-content">
                          <div className="modal-header">
                             <button type="button" className="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                            <h4 className="modal-title">Solution</h4>
+                            <h4 className="modal-title">Solution - {this.state.content.length} characters of {this.props.language}</h4>
                          </div>
                         <div className="modal-body">
                             <div className="row">
@@ -193,13 +192,14 @@ class SolutionRow extends React.Component {
 
         return (
                 <tr>
-                        <td><SolutionViewer solutionUrl={this.props.contentUrl} /></td>
+                        <td><SolutionViewer solutionUrl={this.props.contentUrl} language={this.props.solutionLanguage}/></td>
                         <td>
                             {this.props.votes}
                         </td>
                         <td><AuthorBadge profileUrl={this.props.author.profileUrl} authType={this.props.author.authType} name={this.props.author.name} /></td>
                         <td><span className="badge">{this.props.solutionLength}</span></td>
                         <td>{localDatetime.format("MMMM Do YYYY, h:mm:ss a")}</td>
+                        <td>{this.props.solutionLanguage}</td>
                         <td>{deleteLink}</td>
 
                 </tr>);
@@ -216,11 +216,18 @@ class SolutionTable extends React.Component {
     }
 
     renderSolution(solution) {
+
+        let language = this.props.problemLanguage;
+        if (solution.language) {
+            language = solution.language;
+        }
+
         return <SolutionRow deleteSolutionUrl={solution.deleteSolutionUrl}
                             author={solution.author}
                             solutionLength={solution.length}
                             solutionDate={solution.date}
                             contentUrl={solution.contentUrl}
+                            solutionLanguage={language}
                             votes={solution.votes} />;
     }
 
@@ -243,6 +250,7 @@ class SolutionTable extends React.Component {
                         <th>Player</th>
                         <th>Score</th>
                         <th>Date Played</th>
+                        <th>Language</th>
                         <th></th>
                     </tr>
             {solutionRows}

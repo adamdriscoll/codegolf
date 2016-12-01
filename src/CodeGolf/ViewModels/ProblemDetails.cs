@@ -34,5 +34,6 @@ namespace CodeGolf.ViewModels
         public string LanguageName { get; set; }
         public string SolutionHelp { get; set; }
         public bool Closed => _problem.Closed;
+        public bool AnyLanguage => _problem.AnyLanguage;
     }
 }

@@ -109,6 +109,7 @@ namespace CodeGolf.Controllers
                 DownvoteUrl = Url.Action("Downvote", new { itemId = id }),
                 AddCommentUrl = Url.Action("AddComment", new { id }),
                 Comments = comments.Select(m => new SolutionCommentViewModel(m, currentUserName)),
+                Language = solution.Language,
                 Votes = solution.Votes
                 //TODO: Langauge = solution.Language.Name
             };

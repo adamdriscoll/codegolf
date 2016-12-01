@@ -6,6 +6,7 @@
             title: "",
             description: "",
             testCases: [{ input: "", output: "" }],
+            anyLanguage: true,
             language: "",
             enforceOutput: false,
             canSubmit: false,
@@ -34,8 +35,15 @@
     }
 
     onEnforceOutputChanged(event) {
-        this.state.enforceOutput = event.target.value;
+        this.state.enforceOutput = event.target.checked;
         this.state.canSubmit = this.checkCanSubmit();
+        this.setState(this.state);
+    }
+
+    onAnyLanguageChange(event) {
+        this.state.enforceOutput = false;
+        this.state.showEnforceCheckBox = false;
+        this.state.anyLanguage = event.target.checked;
         this.setState(this.state);
     }
 
@@ -67,6 +75,7 @@
                 self.state.description = data.description;
                 self.state.testCases = data.testCases;
                 self.state.language = data.languageName;
+                self.state.anyLanguage = data.anyLanguage;
                 self.setState(self.state);
             });
         }
@@ -101,12 +110,17 @@
     }
 
     submit() {
+        if (this.state.anyLanguage) {
+            this.state.language = "Any";
+        }
+
         $.post(this.state.postUrl, {
             name: this.state.title,
             description: this.state.description,
             testCases: this.state.testCases,
             languageName: this.state.language,
-            enforceOutput: this.state.enforceOutput
+            enforceOutput: this.state.enforceOutput,
+            anyLanguage: this.state.anyLanguage
         },
             function(data) {
                 window.location.href = data;
@@ -125,11 +139,16 @@
         let enforceCheckBox = null;
         if (this.state.showEnforceCheckBox) {
             enforceCheckBox = <div className="form-group">
-                                  <input type="checkbox" id="EnforceOutput" value={this.state.enforceOutput}/>
+                                  <input type="checkbox" id="EnforceOutput" checked={this.state.enforceOutput} onChange={this.onEnforceOutputChanged.bind(this)}/>
                                   <label htmlFor="EnforceOutput">Enforce Output</label>
                                   <br/>
                                   <small>Require solutions to match output before they can be submitted.</small>
                               </div>;
+        }
+
+        let languageSelector = null;
+        if (!this.state.anyLanguage) {
+            languageSelector = <LanguageSelector languagesUrl={this.props.languagesUrl} onSelectedLanguageChanged={this.handleOnSelectedLanguageChanged.bind(this)} language={this.state.language}/>
         }
 
         return (
@@ -138,7 +157,12 @@
                     <label htmlFor="name">Name</label>
                     <input type="text" className="form-control" placeholder="Name" value={this.state.title} onChange={this.onNameChanged.bind(this)} />
                 </div>
-                <LanguageSelector languagesUrl={this.props.languagesUrl} onSelectedLanguageChanged={this.handleOnSelectedLanguageChanged.bind(this)} language={this.state.language}/>
+                <div className="form-group">
+                                  <input type="checkbox" id="anyLanguage" checked={this.state.anyLanguage} onChange={this.onAnyLanguageChange.bind(this)}/>
+                                  <label htmlFor="anyLanguage">Any Language</label>
+                </div>
+                {languageSelector}
+                {enforceCheckBox}
                 <div className="form-group">
                     <label htmlFor="description">Description</label>
                     <br />
@@ -149,7 +173,6 @@
 
                 <input className="btn btn-default" type="button" value="Add Test Case" onClick={this.addTestCase.bind(this)} />
 
-                {enforceCheckBox}
                 {submit}
             </div>
         );

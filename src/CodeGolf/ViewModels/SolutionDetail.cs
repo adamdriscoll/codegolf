@@ -69,5 +69,7 @@ namespace CodeGolf.ViewModels
         public UserViewModel Author { get; set; }
 
         public bool? Passing => _solution.Passing;
+
+        public string Language => _solution.Language;
     }
 }

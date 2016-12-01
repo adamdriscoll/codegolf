@@ -56,9 +56,11 @@ class Problem extends React.Component {
         let solutionEditor;
         if (this.props.canAddSolution) {
             solutionEditor = <SolutionEditor
+                                canSelectLanguage={this.props.anyLanguage}
                                 problemId={this.props.problemId}
                                 newSolutionUrl={this.props.newSolutionUrl}
                                 problemUrl={this.props.problemUrl}
+                                language={this.props.language}
                                 supportsValidation={this.props.languageSupportsValidation}
                                 solutionValidationUrl={this.props.solutionValidationUrl}
                                 enforceOutput={this.props.enforceSolutionOutput}/>;
@@ -85,7 +87,7 @@ class Problem extends React.Component {
             <hr/>
             <ProblemDescription description={this.props.problemDescription} testCases={this.props.testCases} />
             <h3>Rounds</h3>
-            <SolutionTable solutionDataUrl={this.props.solutionDataUrl} />
+            <SolutionTable solutionDataUrl={this.props.solutionDataUrl} problemLanguage={this.props.language} />
             <div className="row">
                 <div className="col-md-12">
                     {solutionEditor}

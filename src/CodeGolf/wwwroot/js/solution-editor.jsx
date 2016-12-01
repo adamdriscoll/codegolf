@@ -75,6 +75,7 @@ class SolutionEditor extends React.Component {
         this.state = {
             solutionContent: "",
             solutionOutput: "",
+            language: props.language,
             canSubmitSolution: !props.enforceOutput,
             solutionLength: 0
         }
@@ -85,10 +86,15 @@ class SolutionEditor extends React.Component {
         this.setState(this.state);
 
         $.post(this.props.newSolutionUrl,
-            { content: this.state.solutionContent, problem: this.props.problemId },
+            { content: this.state.solutionContent, problem: this.props.problemId, language: this.state.language },
             function() {
                 window.location.reload();
             });
+    }
+
+    handleOnSelectedLanguageChanged(lang, langName) {
+        this.state.language = langName;
+        this.setState(this.state);
     }
 
     solutionContentChanged(content) {
@@ -140,10 +146,15 @@ class SolutionEditor extends React.Component {
         const solutionValidator = this.renderSolutionValidator();
         const enforceOutput = this.renderEnforceOutput();
         const solutionOutput = this.renderSolutionOutput();
-
+        
         let submitButton = <input className="btn btn-default" type="button" value="Submit" onClick={this.submitSolution.bind(this)}/>;
         if (!this.state.canSubmitSolution) {
             submitButton = <input className="btn  btn-default" type="button" value="Submit" disabled/>;
+        }
+
+        let languageSelector = null;
+        if (this.props.canSelectLanguage) {
+            languageSelector = <LanguageSelector onSelectedLanguageChanged={this.handleOnSelectedLanguageChanged.bind(this)}/>;
         }
 
         return (
@@ -156,6 +167,7 @@ class SolutionEditor extends React.Component {
                     </div>
                     {solutionValidator}
                 </div>
+                {languageSelector}
                 {enforceOutput}
                 <div className="row">
                     <div className="col-md-12">

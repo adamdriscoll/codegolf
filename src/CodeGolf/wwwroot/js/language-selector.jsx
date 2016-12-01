@@ -14,7 +14,7 @@
     componentWillMount() {
         const self = this;
 
-        $.get(this.props.languagesUrl,
+        $.get("/language/get/",
              function (data) {
                  self.state.availableLanguages = data;
                  self.setState(self.state);

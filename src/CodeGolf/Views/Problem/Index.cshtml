@@ -22,7 +22,8 @@
     problemDescription = Model.Description,
     testCases = Model.TestCases,
     solutionDataUrl = Url.Action("Solution", new {id = Model.Id}),
-    closed = Model.Closed
+    closed = Model.Closed,
+    anyLanguage = Model.AnyLanguage
 }, clientOnly: true)
 
 @section scripts {
@@ -36,6 +37,7 @@
     <script language="javascript" src="~/js/solution-editor.jsx"></script>
     <script language="javascript" src="~/js/vote-button.jsx"></script>
     <script language="javascript" src="~/js/solution-list.jsx"></script>
+    <script language="javascript" src="~/js/language-selector.jsx"></script>
     <script language="javascript" src="~/js/problem.jsx"></script>
     
     @Html.ReactInitJavaScript(true)
