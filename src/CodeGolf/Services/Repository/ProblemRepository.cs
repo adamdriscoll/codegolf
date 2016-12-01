@@ -53,7 +53,7 @@ namespace CodeGolf.Services.Repository
         public async Task<IEnumerable<Problem>> Find(string text)
         {
             return _client.CreateDocumentQuery<Problem>(_collectionUri).ToList()
-               .Where(m => (m.Name.ToLower().Contains(text.ToLower()) || m.Description.ToLower().Contains(text.ToLower())))
+               .Where(m => (m.Name.ToLower().Contains(text.ToLower()) || m.Description.ToLower().Contains(text.ToLower())) || m.LanguageName.ToLower().Contains(text.ToLower()))
                .OrderByDescending(m => m.DateAdded)
                .Take(10);
         }
