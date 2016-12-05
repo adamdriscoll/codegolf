@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using CodeGolf.Interfaces;
 using CodeGolf.Models;
@@ -19,7 +18,7 @@ namespace CodeGolf.Services.Validators
 
         public ICodeGolfLanguage Language { get; } = new CSharpCodeGolfLanguage();
 
-        public async Task<ValidationResult> Validate(Problem problem, string solution)
+        public async Task<ValidationResult> Validate(Sql.Models.Problem problem, string solution)
         {
             var testCaseResults = new List<TestCaseResult>();
             foreach (var testCase in problem.TestCases)

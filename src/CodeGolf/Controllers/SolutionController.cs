@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CodeGolf.Interfaces;
-using CodeGolf.Models;
 using CodeGolf.Services;
+using CodeGolf.Sql.Repository;
 using CodeGolf.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -15,59 +15,53 @@ namespace CodeGolf.Controllers
     {
         private readonly ProblemValidatorService _problemValidatorService;
 
-        public SolutionController(DocumentDbService dbService, ProblemValidatorService problemValidatorService) : base(dbService)
+        public SolutionController(IRepository repository, ProblemValidatorService problemValidatorService) : base(repository)
         {
             _problemValidatorService = problemValidatorService;
         }
 
         [HttpGet]
-        public Solution Get(Guid id)
+        public async Task<Sql.Models.Solution> Get(int id)
         {
-            return DocumentDbService.GetDocument<Solution>(id);
+            return await Repository.Solutions.Get(id);
         }
 
         [HttpGet]
-        public string Raw(Guid id)
+        public async Task<string> Raw(int id)
         {
-            return DocumentDbService.GetDocument<Solution>(id).Content;
+            return (await Get(id)).Content;
         }
 
         [Authorize]
-        public async Task<IActionResult> DeleteAsync(Guid guid)
+        public async Task<IActionResult> DeleteAsync(int id)
         {
-            var solution = DocumentDbService.GetDocument<Solution>(guid);
+            var solution = await Get(id);
             if (solution == null)
                 throw new Exception("Solution not found!");
 
             var user = await GetRequestUser();
 
-            if (solution.Author != user.Id)
+            if (solution.Author.UserId != user.UserId)
                 throw new Exception("User does not own solution!");
 
-            var problem = await DocumentDbService.Repository.Problem.Get(solution.Problem);
+            var problem = solution.Problem;
             if (problem == null)
                 throw new Exception("Problem not found!");
 
-            var solutions = problem.Solutions.ToList();
-            solutions.Remove(guid);
-            problem.Solutions = solutions.ToArray();
-            problem.SolutionCount--;
+            await Repository.Solutions.Delete(solution);
 
-            await DocumentDbService.Repository.Problem.Update(problem);
-            await DocumentDbService.DeleteDocument(solution.Id);
-
-            return Redirect("/Problem/Index/" + problem.Id);
+            return Redirect("/Problem/Index/" + problem.ProblemId);
         }
 
         [Authorize]
-        public async Task<ValidationResult> ValidateAsync(Guid problem, string content)
+        public async Task<ValidationResult> ValidateAsync(int problem, string content)
         {
-            var theProblem = await DocumentDbService.Repository.Problem.Get(problem);
-            return await _problemValidatorService.Validate(theProblem.LanguageName, theProblem, content);
+            var theProblem = await Repository.Problem.Get(problem);
+            return await _problemValidatorService.Validate(theProblem.Language, theProblem, content);
         } 
 
         [Authorize]
-        public async Task<IActionResult> PostAsync(Solution solution)
+        public async Task<IActionResult> PostAsync(Sql.Models.Solution solution)
         {
             if (solution == null)
                 throw new ArgumentNullException(nameof(solution));
@@ -76,31 +70,24 @@ namespace CodeGolf.Controllers
                 throw new Exception("Content is required for solution.");
 
             var user = await GetRequestUser();
-            solution.Author = user.Id;
+            solution.Author = user;
 
-            await DocumentDbService.CreateDocument(solution);
-            var problem = await DocumentDbService.Repository.Problem.Get(solution.Problem);
+            await Repository.Solutions.Create(solution);
 
-            var list = problem.Solutions.ToList();
-            list.Add(solution.Id);
-            problem.Solutions = list.ToArray();
-            problem.SolutionCount = problem.Solutions.Length;
-            await DocumentDbService.Repository.Problem.Update(problem);
-
-            return Redirect("/Problem/Index/" + problem.Id);
+            return Redirect("/Problem/Index/" + solution.ProblemId);
         }
 
         [Route("solution/{id}/details")]
-        public async Task<SolutionDetailsViewModel> Details(Guid id)
+        public async Task<SolutionDetailsViewModel> Details(int id)
         {
             var currentUser = await GetRequestUser();
             var currentUserName = currentUser?.Identity;
 
-            var solution = DocumentDbService.GetDocument<Solution>(id);
+            var solution = await Get(id);
             if (solution == null)
                 throw new Exception("Solution not found!");
 
-            var comments = DocumentDbService.Repository.Comments.GetSolutionComments(id).ToList();
+            var comments = Repository.Comments.GetSolutionComments(id).ToList();
 
             return new SolutionDetailsViewModel
             {
@@ -110,102 +97,96 @@ namespace CodeGolf.Controllers
                 AddCommentUrl = Url.Action("AddComment", new { id }),
                 Comments = comments.Select(m => new SolutionCommentViewModel(m, currentUserName)),
                 Language = solution.Language,
-                Votes = solution.Votes
+                Votes = solution.Votes.Sum(m => m.Value)
                 //TODO: Langauge = solution.Language.Name
             };
         }
 
         [Authorize]
         [Route("solution/{itemId}/upvote")]
-        public async Task<int> Upvote(Guid itemId)
+        public async Task<int> Upvote(int itemId)
         {
             return await Vote(itemId, true);
         }
 
         [Authorize]
         [Route("solution/{itemId}/downvote")]
-        public async Task<int> Downvote(Guid itemId)
+        public async Task<int> Downvote(int itemId)
         {
             return await Vote(itemId, false);
         }
 
         [Route("solution/{id}/comment")]
-        public async  Task<IEnumerable<SolutionCommentViewModel>> Comments(Guid id)
+        public async  Task<IEnumerable<SolutionCommentViewModel>> Comments(int id)
         {
             var currentUser = await GetRequestUser();
             var currentUserName = currentUser?.Identity;
 
             return
-                DocumentDbService.Repository.Comments.GetSolutionComments(id)
+                Repository.Comments.GetSolutionComments(id)
                     .Select(m => new SolutionCommentViewModel(m, currentUserName));
         }
 
         [Authorize]
         [Route("solution/comment/{id}")]
         [HttpDelete]
-        public async Task DeleteComment(Guid id)
+        public async Task DeleteComment(int id)
         {
             var currentUser = await GetRequestUser();
-            var comment = DocumentDbService.Repository.Comments.GetSolutionComment(id);
+            var comment = await Repository.Comments.GetSolutionComment(id);
 
-            if (currentUser.Id != comment.Commentor.Id)
+            if (currentUser.UserId != comment.Commentor.UserId)
             {
                 throw new Exception("User is not commentor and cannot delete comment!");
             }
 
-            await DocumentDbService.Repository.Comments.DeleteSolutionComment(id);
+            await Repository.Comments.DeleteSolutionComment(id);
         }
 
         [Authorize]
         [Route("solution/{id}/comment")]
         [HttpPost]
-        public async Task<SolutionCommentViewModel> AddComment(Guid id, string comment)
+        public async Task<SolutionCommentViewModel> AddComment(int id, string comment)
         {
             var currentUser = await GetRequestUser();
-            var solutionComment = new SolutionComment();
-            solutionComment.Solution = id;
+            var solutionComment = new Sql.Models.SolutionComment();
+            solutionComment.SolutionId = id;
             solutionComment.Comment = comment;
             solutionComment.Commentor = currentUser;
-            var commentId = await DocumentDbService.Repository.Comments.AddSolutionComment(solutionComment);
-            solutionComment.Id = new Guid(commentId);
+            solutionComment = await Repository.Comments.AddSolutionComment(solutionComment);
 
             return new SolutionCommentViewModel(solutionComment, currentUser.Identity);
         }
 
-        private async Task<int> Vote(Guid itemId, bool upvote)
+        private async Task<int> Vote(int itemId, bool upvote)
         {
             var value = upvote ? 1 : -1;
 
             var user = await GetRequestUser();
 
-            var solution = DocumentDbService.GetDocument<Solution>(itemId);
+            var solution = await Get(itemId);
 
-            var castVote = DocumentDbService.GetDocumentType<Vote>(DocumentType.Vote)
-                .Where(m => m.Item == itemId && m.Voter == user.Id)
-                .ToList()
-                .FirstOrDefault();
+            var castVote = await Repository.Votes.GetVoteByItemIdAndUser(itemId, user.UserId);
 
-            var vote = new Vote();
-            vote.Item = itemId;
+            var vote = new Sql.Models.Vote();
+            vote.ItemId = itemId;
             vote.Value = value;
 
             if (castVote == null)
             {
-                vote.Voter = user.Id;
-                vote.ItemType = DocumentType.Solution;
-                await DocumentDbService.CreateDocument(vote);
-                solution.Votes += vote.Value;
-                await DocumentDbService.UpdateDocument(solution);
+                vote.Voter = user;
+                solution.Votes.Add(vote);
+
+                await Repository.Votes.Create(vote);
+                await Repository.SaveChangesAsync();
             }
             else if (castVote.Value != vote.Value)
             {
                 castVote.Value = vote.Value;
-                await DocumentDbService.UpdateDocument(castVote);
-                solution.Votes += vote.Value * 2;
-                await DocumentDbService.UpdateDocument(solution);
+                await Repository.SaveChangesAsync();
             }
 
-            return solution.Votes;
+            return solution.Votes.Sum(m => m.Value);
         }
     }
 }

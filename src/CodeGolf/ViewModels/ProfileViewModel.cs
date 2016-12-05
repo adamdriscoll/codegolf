@@ -9,7 +9,7 @@ namespace CodeGolf.ViewModels
         {
         }
 
-        public User User { get; set; }
+        public Sql.Models.User User { get; set; }
 
         public IEnumerable<ProblemProfile> Problems { get; set; }
         public IEnumerable<SolutionProfile> Solutions { get; set; }

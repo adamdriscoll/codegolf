@@ -1,5 +1,5 @@
 ﻿using System;
-using CodeGolf.Models;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
 
@@ -7,9 +7,9 @@ namespace CodeGolf.ViewModels
 {
     public class SolutionDetail
     {
-        private readonly Solution _solution;
+        private readonly Sql.Models.Solution _solution;
 
-        public SolutionDetail(Solution solution, UserViewModel author, IUrlHelper urlHelper)
+        public SolutionDetail(Sql.Models.Solution solution, UserViewModel author, IUrlHelper urlHelper)
         {
             _solution = solution;
             Author = author;
@@ -18,7 +18,7 @@ namespace CodeGolf.ViewModels
             {
                 Action = "DeleteAsync",
                 Controller = "Solution",
-                Values = new {guid = solution.Id}
+                Values = new {id = solution.SolutionId}
             });
 
             UpvoteUrl = urlHelper.Action(new UrlActionContext
@@ -52,8 +52,8 @@ namespace CodeGolf.ViewModels
             });
         }
 
-        public Guid Id => _solution.Id;
-        public int Length => _solution.Length;
+        public int Id => _solution.SolutionId;
+        public int Length => _solution.Content.Length;
         public DateTime Date => _solution.DateAdded;
 
         public string DeleteSolutionUrl { get; set; }
@@ -64,7 +64,7 @@ namespace CodeGolf.ViewModels
 
         public string ContentUrl { get; set; }
 
-        public int Votes => _solution.Votes;
+        public int Votes => _solution.Votes.Sum(m => m.Value);
 
         public UserViewModel Author { get; set; }
 

@@ -5,18 +5,18 @@ namespace CodeGolf.ViewModels
 {
     public class SolutionCommentViewModel
     {
-        private readonly SolutionComment _comment;
+        private readonly Sql.Models.SolutionComment _comment;
 
-        public SolutionCommentViewModel(SolutionComment comment, string currentUser)
+        public SolutionCommentViewModel(Sql.Models.SolutionComment comment, string currentUser)
         {
             _comment = comment;
 
-            DeleteCommentUrl = $"/solution/comment/{comment.Id}";
+            DeleteCommentUrl = $"/solution/comment/{comment.SolutionCommentId}";
 
             Commentor = new UserViewModel(comment.Commentor, currentUser);
         }
 
-        public Guid CommentId => _comment.Id;
+        public int CommentId => _comment.SolutionCommentId;
 
         public string Comment => _comment.Comment;
 

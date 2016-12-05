@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using CodeGolf.Models;
+using CodeGolf.Sql.Models;
 
 namespace CodeGolf.ViewModels
 {
@@ -11,7 +13,7 @@ namespace CodeGolf.ViewModels
         {
             _problem = problem;
             Author = author.Identity;
-            AuthorId = author.Id.ToString();
+            AuthorId = author.UserId.ToString();
             Language = language;
             IsAuthor = Author == identity;
 
@@ -22,10 +24,10 @@ namespace CodeGolf.ViewModels
             }
         }
 
-        public string Id => _problem.Id.ToString();
+        public string Id => _problem.ProblemId.ToString();
         public string Name => _problem.Name;
         public string Description => _problem.Description;
-        public IEnumerable<Problem.TestCase> TestCases => _problem.TestCases;
+        public IEnumerable<TestCaseViewModel> TestCases => _problem.TestCases.Select(m => new TestCaseViewModel(m));
         public string Author { get; set; }
         public string AuthorId { get; set; }
         public bool IsAuthor { get; set; }
@@ -35,5 +37,19 @@ namespace CodeGolf.ViewModels
         public string SolutionHelp { get; set; }
         public bool Closed => _problem.Closed;
         public bool AnyLanguage => _problem.AnyLanguage;
+    }
+
+    public class TestCaseViewModel
+    {
+        private readonly TestCase _testCase;
+
+        public TestCaseViewModel(TestCase testCase)
+        {
+            _testCase = testCase;
+        }
+
+        public string Input => _testCase.Input;
+
+        public string Output => _testCase.Output;
     }
 }

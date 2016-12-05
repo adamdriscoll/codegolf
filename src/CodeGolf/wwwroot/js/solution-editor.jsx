@@ -86,7 +86,7 @@ class SolutionEditor extends React.Component {
         this.setState(this.state);
 
         $.post(this.props.newSolutionUrl,
-            { content: this.state.solutionContent, problem: this.props.problemId, language: this.state.language },
+            { content: this.state.solutionContent, problemId: this.props.problemId, language: this.state.language },
             function() {
                 window.location.reload();
             });

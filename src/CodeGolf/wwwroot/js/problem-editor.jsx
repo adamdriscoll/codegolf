@@ -74,7 +74,7 @@
                 self.state.title = data.name;
                 self.state.description = data.description;
                 self.state.testCases = data.testCases;
-                self.state.language = data.languageName;
+                self.state.language = data.language;
                 self.state.anyLanguage = data.anyLanguage;
                 self.setState(self.state);
             });
@@ -118,7 +118,7 @@
             name: this.state.title,
             description: this.state.description,
             testCases: this.state.testCases,
-            languageName: this.state.language,
+            language: this.state.language,
             enforceOutput: this.state.enforceOutput,
             anyLanguage: this.state.anyLanguage
         },

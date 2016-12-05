@@ -4,7 +4,7 @@ namespace CodeGolf.ViewModels
 {
     public class UserViewModel
     {
-        public UserViewModel(User user, string currentUser)
+        public UserViewModel(Sql.Models.User user, string currentUser)
         {
             Name = user.Identity;
             AuthType = user.Authentication;

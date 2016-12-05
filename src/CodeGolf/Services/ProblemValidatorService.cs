@@ -21,7 +21,7 @@ namespace CodeGolf.Services
             };
         }
 
-        public async Task<ValidationResult> Validate(string language, Problem problem, string solution)
+        public async Task<ValidationResult> Validate(string language, Sql.Models.Problem problem, string solution)
         {
             var validator = _validators.FirstOrDefault(m => m.Language.Name.Equals(language, StringComparison.OrdinalIgnoreCase));
             if (validator != null)

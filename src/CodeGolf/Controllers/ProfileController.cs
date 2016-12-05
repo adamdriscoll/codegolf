@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using CodeGolf.Models;
-using CodeGolf.Services;
+using CodeGolf.Sql.Repository;
 using CodeGolf.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,11 +10,11 @@ namespace CodeGolf.Controllers
 {
     public class ProfileController : AuthorizedController
     {
-        private readonly DocumentDbService _documentDbService;
+        private readonly IRepository _repository;
 
-        public ProfileController(DocumentDbService documentDbService) : base(documentDbService)
+        public ProfileController(IRepository repository) : base(repository)
         {
-            _documentDbService = documentDbService;
+            _repository = repository;
         }
 
         [Route("/profile/")]
@@ -27,7 +26,7 @@ namespace CodeGolf.Controllers
                 profileViewModel.User = await GetRequestUser();
             }
 
-            return await ReturnProfileView(profileViewModel);
+            return ReturnProfileView(profileViewModel);
         }
 
         [Route("/profile/{profile}")]
@@ -44,7 +43,7 @@ namespace CodeGolf.Controllers
             }
             else if (!string.IsNullOrEmpty(profile))
             {
-                var profiles = await _documentDbService.Repository.Users.Find(profile);
+                var profiles = _repository.Users.Find(profile).ToList();
                 if (profiles.Count() > 1)
                 {
                     throw new Exception("Expected one profile.");
@@ -53,20 +52,20 @@ namespace CodeGolf.Controllers
                 profileViewModel.User = profiles.First();
             }
 
-            return await ReturnProfileView(profileViewModel);
+            return ReturnProfileView(profileViewModel);
         }
 
-        private async Task<IActionResult> ReturnProfileView(ProfileViewModel profileViewModel)
+        private IActionResult ReturnProfileView(ProfileViewModel profileViewModel)
         {
             var problemProfiles = new List<ProfileViewModel.ProblemProfile>();
-            var problems = await _documentDbService.Repository.Problem.GetByUser(profileViewModel.User);
+            var problems = _repository.Problem.GetByUser(profileViewModel.User);
             foreach (var problem in problems)
             {
                 problemProfiles.Add(new ProfileViewModel.ProblemProfile
                 {
-                    Id = problem.Id.ToString(),
-                    Language = problem.LanguageName,
-                    Solutions = problem.SolutionCount,
+                    Id = problem.ProblemId.ToString(),
+                    Language = problem.Language,
+                    Solutions = problem.Solutions.Count,
                     Name = problem.Name
                 });
             }
@@ -74,18 +73,18 @@ namespace CodeGolf.Controllers
             profileViewModel.Problems = problemProfiles;
 
             var solutionProfiles = new List<ProfileViewModel.SolutionProfile>();
-            var solutions = _documentDbService.Client.CreateDocumentQuery<Solution>(_documentDbService.DatabaseUri).Where(m => m.Author == profileViewModel.User.Id && m.Type == DocumentType.Solution);
+            var solutions = profileViewModel.User.Solutions;
             foreach (var solution in solutions)
             {
-                var problem = await _documentDbService.Repository.Problem.Get(solution.Problem);
+                var problem = solution.Problem;
 
                 solutionProfiles.Add(new ProfileViewModel.SolutionProfile
                 {
-                    Id = solution.Id.ToString(),
+                    Id = solution.SolutionId.ToString(),
                     Problem = problem.Name,
-                    ProblemId = problem.Id.ToString(),
-                    Length = solution.Length,
-                    Language = problem.LanguageName
+                    ProblemId = problem.ProblemId.ToString(),
+                    Length = solution.Content.Length,
+                    Language = problem.Language
 
                 });
             }

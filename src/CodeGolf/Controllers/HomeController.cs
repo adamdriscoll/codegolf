@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using CodeGolf.Models;
-using CodeGolf.Services;
+using CodeGolf.Sql.Repository;
 using CodeGolf.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,87 +8,83 @@ namespace CodeGolf.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly DocumentDbService _documentDbService;
+        private readonly IRepository _repository;
 
-        public HomeController(DocumentDbService dbService)
+        public HomeController(IRepository repository)
         {
-            _documentDbService = dbService;
+            _repository = repository;
         }
 
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-            var recentProblems = await GetRecentProblems();
-            var popularProblems = await GetPopularProblems();
+            var recentProblems = GetRecentProblems();
+            var popularProblems = GetPopularProblems();
             var vm = new HomeViewModel(recentProblems, popularProblems, HttpContext.User.Identity.IsAuthenticated,
                 HttpContext.User.Identity.Name);
 
             return View(vm);
         }
 
-        private async Task<IEnumerable<RecentProblem>> GetPopularProblems()
+        private IEnumerable<RecentProblem> GetPopularProblems()
         {
             var popularProblems = new List<RecentProblem>();
 
-            var problems = await _documentDbService.Repository.Problem.GetPopularProblems();
+            var problems = _repository.Problem.GetPopularProblems().ToList();
 
             foreach (var problem in problems)
             {
-                var solutions = _documentDbService.Client.CreateDocumentQuery<Solution>(_documentDbService.DatabaseUri)
-                    .Where(m => problem.Solutions.Contains(m.Id))
-                    .ToList();
+                var solutions = problem.Solutions;
 
-                solutions = solutions.OrderBy(m => m.Passing != null && m.Passing.Value).ThenBy(m => m.Length).ToList();
+                solutions = solutions.OrderBy(m => m.Passing != null && m.Passing.Value).ThenBy(m => m.Content.Length).ToList();
 
                 var topSolution = solutions.FirstOrDefault();
 
                 var topSolutionLength = 0;
                 if (topSolution != null)
-                    topSolutionLength = topSolution.Length;
+                    topSolutionLength = topSolution.Content.Length;
 
                 popularProblems.Add(new RecentProblem
                 {
                     Name = problem.Name,
-                    Id = problem.Id,
-                    Language = problem.LanguageName,
+                    Id = problem.ProblemId,
+                    Language = problem.Language,
                     ShortestSolution = topSolutionLength,
                     SolutionCount = solutions.Count,
-                    Author = problem.AuthorModel.Identity,
-                    AuthorId = problem.AuthorModel.Id.ToString()
+                    Author = problem.Author.Identity,
+                    AuthorId = problem.Author.UserId.ToString()
                 });
             }
 
             return popularProblems;
         }
 
-        private async Task<IEnumerable<RecentProblem>> GetRecentProblems()
+        private IEnumerable<RecentProblem> GetRecentProblems()
         {
             var popularProblems = new List<RecentProblem>();
 
-            var problems = await _documentDbService.Repository.Problem.GetRecentProblems();
+            var problems = _repository.Problem.GetRecentProblems().ToList();
 
             foreach (var problem in problems)
             {
-                var solutions = _documentDbService.Client.CreateDocumentQuery<Solution>(_documentDbService.DatabaseUri)
-                    .Where(m => problem.Solutions.Contains(m.Id))
-                    .ToList();
+                var solutions = problem.Solutions;
 
-                solutions = solutions.OrderBy(m => m.Passing != null && m.Passing.Value).ThenBy(m => m.Length).ToList();
+                solutions = solutions.OrderBy(m => m.Passing != null && m.Passing.Value).ThenBy(m => m.Content.Length).ToList();
 
                 var topSolution = solutions.FirstOrDefault();
 
                 var topSolutionLength = 0;
                 if (topSolution != null)
-                    topSolutionLength = topSolution.Length;
+                    topSolutionLength = topSolution.Content.Length;
 
                 popularProblems.Add(new RecentProblem
                 {
                     Name = problem.Name,
-                    Id = problem.Id,
-                    Language = problem.LanguageName,
+                    Id = problem.ProblemId,
+                    Language = problem.Language,
                     ShortestSolution = topSolutionLength,
                     SolutionCount = solutions.Count,
-                    Author = problem.AuthorModel.Identity,
-                    AuthorId = problem.AuthorModel.Id.ToString()
+                    Author = problem.Author.Identity,
+                    AuthorId = problem.Author.UserId.ToString()
                 });
             }
 

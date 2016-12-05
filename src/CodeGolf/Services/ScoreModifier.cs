@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CodeGolf.Models;
+using CodeGolf.Sql.Models;
 
 namespace CodeGolf.Services
 {
@@ -14,36 +15,34 @@ namespace CodeGolf.Services
         private const int NewSolutionValue = 1;
         private const int TopSolutionValue = 5;
 
-        private readonly DocumentDbService _service;
+        //public async Task VoteOnSolution(User solutionAuthor, Vote vote)
+        //{
+        //    var action = new ScoreModifierAction
+        //    {
+        //        Id = Guid.NewGuid(),
+        //        ModifierType = ModifierType.Vote,
+        //        Modifier = vote.Id,
+        //        Value = vote.Value > 0 ? UpvoteValue : DownvoteValue
+        //    };
 
-        public async Task VoteOnSolution(User solutionAuthor, Vote vote)
-        {
-            var action = new ScoreModifierAction
-            {
-                Id = Guid.NewGuid(),
-                ModifierType = ModifierType.Vote,
-                Modifier = vote.Id,
-                Value = vote.Value > 0 ? UpvoteValue : DownvoteValue
-            };
+        //    solutionAuthor.Score += action.Value;
 
-            solutionAuthor.Score += action.Value;
+        //    await _service.Repository.Users.Update(solutionAuthor);
+        //}
 
-            await _service.Repository.Users.Update(solutionAuthor);
-        }
+        //public async Task NewProblem(User problemAuthor, Problem problem)
+        //{
+        //    var action = new ScoreModifierAction
+        //    {
+        //        Id = Guid.NewGuid(),
+        //        Modifier = problem.Id,
+        //        ModifierType = ModifierType.Problem,
+        //        Value = NewProblemValue
+        //    };
 
-        public async Task NewProblem(User problemAuthor, Problem problem)
-        {
-            var action = new ScoreModifierAction
-            {
-                Id = Guid.NewGuid(),
-                Modifier = problem.Id,
-                ModifierType = ModifierType.Problem,
-                Value = NewProblemValue
-            };
+        //    problemAuthor.Score += action.Value;
 
-            problemAuthor.Score += action.Value;
-
-            await _service.Repository.Users.Update(problemAuthor);
-        }
+        //    await _service.Repository.Users.Update(problemAuthor);
+        //}
     }
 }

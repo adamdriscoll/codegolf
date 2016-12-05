@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CodeGolf.Interfaces;
 using CodeGolf.Models;
+using CodeGolf.Sql.Models;
 using Newtonsoft.Json;
 
 namespace CodeGolf.Services.Validators
@@ -28,7 +29,7 @@ namespace CodeGolf.Services.Validators
                 input.StartsWith("None", StringComparison.OrdinalIgnoreCase);
         }
 
-        private async Task<string> WriteTestCases(IEnumerable<Problem.TestCase> testCases, string solution)
+        private async Task<string> WriteTestCases(IEnumerable<TestCase> testCases, string solution)
         {
             var testFileContent = new StringBuilder();
             var index = 0;
@@ -99,7 +100,7 @@ namespace CodeGolf.Services.Validators
             ";
         }
 
-        public async Task<ValidationResult> Validate(Problem problem, string solution)
+        public async Task<ValidationResult> Validate(Sql.Models.Problem problem, string solution)
         {
             var testCaseResults = new List<TestCaseResult>();
 

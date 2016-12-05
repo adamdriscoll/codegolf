@@ -22,7 +22,8 @@
     "Microsoft.Azure.DocumentDB": "1.9.5",
     "Microsoft.Azure.Management.Automation": "2.0.1",
     "Microsoft.IdentityModel.Clients.ActiveDirectory": "3.13.4",
-    "React.AspNet": "3.0.0"
+    "React.AspNet": "3.0.0",
+    "EntityFramework": "6.1.3"
   },
 
   "tools": {
@@ -33,7 +34,13 @@
 
   "frameworks": {
     "net452": {
+      "dependencies": {
+        "CodeGolf.Sql": {
+          "target": "project"
+        }
+      },
       "frameworkAssemblies": {
+        "System.Data": "4.0.0.0",
         "System.Web": "4.0.0.0"
       }
     } 

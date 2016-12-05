@@ -10,7 +10,7 @@ namespace CodeGolf.Interfaces
     {
         ICodeGolfLanguage Language { get; }
 
-        Task<ValidationResult> Validate(Problem problem, string solution);
+        Task<ValidationResult> Validate(Sql.Models.Problem problem, string solution);
     }
 
     public class ValidationResult

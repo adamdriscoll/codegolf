@@ -1,5 +1,9 @@
-﻿using CodeGolf.Models;
+﻿using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
+using CodeGolf.Models;
 using CodeGolf.Services;
+using CodeGolf.Sql;
+using CodeGolf.Sql.Repository;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -46,39 +50,15 @@ namespace CodeGolf
             });
 
 #if DEBUG
-            var configPrefix = "DocumentDbConfig_Debug";
+            var connectionString = Configuration.GetValue<string>("SqlConfig:ConnectionString");
 #else
-            var configPrefix = "DocumentDbConfig";
-#endif
-            var database = Configuration.GetValue<string>($"{configPrefix}:DocumentDb");
-            var collection = Configuration.GetValue<string>($"{configPrefix}:DocumentCollection");
-            var endpoint = Configuration.GetValue<string>($"{configPrefix}:EndpointUri");
-            var primaryKey = Configuration.GetValue<string>($"{configPrefix}:PrimaryKey");
+            var connectionString = Configuration.GetValue<string>("SqlConfig:ConnectionString");
+#endif 
 
-            var dbService = new DocumentDbService(new DocumentDbConfig
-            {
-                Database = database,
-                DocumentCollection = collection,
-                EndpointUri = endpoint,
-                PrimaryKey = primaryKey
-            });
+            //var initializer = new MigrateDatabaseToLatestVersion<CodeGolfDbContext, Sql.Migrations.Configuration>();
+            //Database.SetInitializer(initializer);
 
-#if DEBUG
-            var emulator = new DocumentDbEmulator();
-            emulator.Start();
-#endif
-
-            dbService.EnsureInitialized().Wait();
-            var documentVersionManager = new DocumentVersionManager(dbService);
-            documentVersionManager.Upgrade().Wait();
-
-            services.AddTransient(x => new DocumentDbService(new DocumentDbConfig
-            {
-                Database = database,
-                DocumentCollection = collection,
-                EndpointUri = endpoint,
-                PrimaryKey = primaryKey
-            }));
+            services.AddTransient<IRepository>(x => new Repository(connectionString));
 
             ConfigureAzureFunctionService(services);
             
@@ -155,6 +135,8 @@ namespace CodeGolf
                 options.ClientId = clientId;
                 options.ClientSecret = clientSecret;
             });
+
+           
 
             app.UseMvc(routes =>
             {
