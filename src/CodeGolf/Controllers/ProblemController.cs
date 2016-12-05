@@ -46,15 +46,16 @@ namespace CodeGolf.Controllers
         {
             var currentUser = await GetRequestUser();
 
-            var solutions = Repository.Solutions.GetSolutionByProblemId(id);
+            var solutions = Repository.Solutions.GetSolutionByProblemId(id).ToList();
             
             var solutionDetails = new List<SolutionDetail>();
             foreach (var solution in solutions)
             {
                 var currentUserName = currentUser?.Identity;
                 var user = solution.Author;
+                var votes = await Repository.Votes.GetCountForItemId(solution.SolutionId);
                 var userVm = new UserViewModel(user, currentUserName);
-                var svm = new SolutionDetail(solution, userVm, Url);
+                var svm = new SolutionDetail(solution, userVm,votes, Url);
 
                 solutionDetails.Add(svm);
             }

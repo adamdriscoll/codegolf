@@ -38,7 +38,9 @@ namespace CodeGolf.Sql.Repository
         public async Task Delete(Solution solution)
         {
             _dbContext.SolutionComments.RemoveRange(solution.SolutionComments);
-            _dbContext.Votes.RemoveRange(solution.Votes);
+
+            
+
             _dbContext.Solutions.Remove(solution);
             await _dbContext.SaveChangesAsync();
         }

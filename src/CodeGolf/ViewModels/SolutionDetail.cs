@@ -9,7 +9,7 @@ namespace CodeGolf.ViewModels
     {
         private readonly Sql.Models.Solution _solution;
 
-        public SolutionDetail(Sql.Models.Solution solution, UserViewModel author, IUrlHelper urlHelper)
+        public SolutionDetail(Sql.Models.Solution solution, UserViewModel author, int votes, IUrlHelper urlHelper)
         {
             _solution = solution;
             Author = author;
@@ -50,6 +50,8 @@ namespace CodeGolf.ViewModels
                     id = Id
                 }
             });
+
+            Votes = votes;
         }
 
         public int Id => _solution.SolutionId;
@@ -64,7 +66,7 @@ namespace CodeGolf.ViewModels
 
         public string ContentUrl { get; set; }
 
-        public int Votes => _solution.Votes.Sum(m => m.Value);
+        public int Votes { get; }
 
         public UserViewModel Author { get; set; }
 

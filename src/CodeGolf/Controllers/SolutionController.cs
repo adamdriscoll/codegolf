@@ -48,6 +48,7 @@ namespace CodeGolf.Controllers
             if (problem == null)
                 throw new Exception("Problem not found!");
 
+            await Repository.Votes.DeleteForItemId(solution.SolutionId);
             await Repository.Solutions.Delete(solution);
 
             return Redirect("/Problem/Index/" + problem.ProblemId);
@@ -89,6 +90,8 @@ namespace CodeGolf.Controllers
 
             var comments = Repository.Comments.GetSolutionComments(id).ToList();
 
+            var votes = await Repository.Votes.GetCountForItemId(id);
+
             return new SolutionDetailsViewModel
             {
                 Content = solution.Content,
@@ -97,7 +100,7 @@ namespace CodeGolf.Controllers
                 AddCommentUrl = Url.Action("AddComment", new { id }),
                 Comments = comments.Select(m => new SolutionCommentViewModel(m, currentUserName)),
                 Language = solution.Language,
-                Votes = solution.Votes.Sum(m => m.Value)
+                Votes = votes
                 //TODO: Langauge = solution.Language.Name
             };
         }
@@ -175,7 +178,6 @@ namespace CodeGolf.Controllers
             if (castVote == null)
             {
                 vote.Voter = user;
-                solution.Votes.Add(vote);
 
                 await Repository.Votes.Create(vote);
                 await Repository.SaveChangesAsync();
@@ -186,7 +188,7 @@ namespace CodeGolf.Controllers
                 await Repository.SaveChangesAsync();
             }
 
-            return solution.Votes.Sum(m => m.Value);
+            return await Repository.Votes.GetCountForItemId(solution.SolutionId);
         }
     }
 }
