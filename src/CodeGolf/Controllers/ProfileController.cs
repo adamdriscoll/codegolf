@@ -26,7 +26,7 @@ namespace CodeGolf.Controllers
                 profileViewModel.User = await GetRequestUser();
             }
 
-            return ReturnProfileView(profileViewModel);
+            return await ReturnProfileView(profileViewModel);
         }
 
         [Route("/profile/{profile}")]
@@ -52,10 +52,10 @@ namespace CodeGolf.Controllers
                 profileViewModel.User = profiles.First();
             }
 
-            return ReturnProfileView(profileViewModel);
+            return await ReturnProfileView(profileViewModel);
         }
 
-        private IActionResult ReturnProfileView(ProfileViewModel profileViewModel)
+        private async Task<IActionResult> ReturnProfileView(ProfileViewModel profileViewModel)
         {
             var problemProfiles = new List<ProfileViewModel.ProblemProfile>();
             var problems = _repository.Problem.GetByUser(profileViewModel.User);
@@ -76,7 +76,9 @@ namespace CodeGolf.Controllers
             var solutions = profileViewModel.User.Solutions;
             foreach (var solution in solutions)
             {
-                var problem = solution.Problem;
+                if (!solution.ProblemId.HasValue) { continue;}
+
+                var problem = await _repository.Problem.Get(solution.ProblemId.Value);
 
                 solutionProfiles.Add(new ProfileViewModel.SolutionProfile
                 {

@@ -55,6 +55,7 @@
       <DependentUpon>201612031635118_Initial.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
+    <Compile Include="Models\Notification.cs" />
     <Compile Include="Models\Problem.cs" />
     <Compile Include="Models\Solution.cs" />
     <Compile Include="Models\SolutionComment.cs" />
@@ -63,6 +64,7 @@
     <Compile Include="Models\Vote.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repository\ICommentRepository.cs" />
+    <Compile Include="Repository\INotificationRepository.cs" />
     <Compile Include="Repository\IProblemRepository.cs" />
     <Compile Include="Repository\IRepository.cs" />
     <Compile Include="Repository\ISolutionRepository.cs" />

@@ -49,7 +49,7 @@ namespace CodeGolf
             });
 
 #if DEBUG
-            var connectionString = Configuration.GetValue<string>("SqlConfig_Debug:ConnectionString");
+            var connectionString = Configuration.GetValue<string>("SqlConfig_Preprod:ConnectionString");
 #else
             var connectionString = Configuration.GetValue<string>("SqlConfig:ConnectionString");
 #endif
