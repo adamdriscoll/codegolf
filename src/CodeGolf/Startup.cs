@@ -1,5 +1,4 @@
 ﻿using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 using CodeGolf.Models;
 using CodeGolf.Services;
 using CodeGolf.Sql;
@@ -50,13 +49,12 @@ namespace CodeGolf
             });
 
 #if DEBUG
-            var connectionString = Configuration.GetValue<string>("SqlConfig:ConnectionString");
+            var connectionString = Configuration.GetValue<string>("SqlConfig_Debug:ConnectionString");
 #else
             var connectionString = Configuration.GetValue<string>("SqlConfig:ConnectionString");
-#endif 
-
-            //var initializer = new MigrateDatabaseToLatestVersion<CodeGolfDbContext, Sql.Migrations.Configuration>();
-            //Database.SetInitializer(initializer);
+#endif
+            var initializer = new MigrateDatabaseToLatestVersion<CodeGolfDbContext, Sql.Migrations.Configuration>(true);
+            Database.SetInitializer(initializer);
 
             services.AddTransient<IRepository>(x => new Repository(connectionString));
 

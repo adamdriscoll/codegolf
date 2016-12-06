@@ -9,13 +9,9 @@ namespace CodeGolf.Sql
 {
     public class CodeGolfDbContext : DbContext 
     {
-        public CodeGolfDbContext() 
+        public CodeGolfDbContext()
         {
             
-        }
-
-        public CodeGolfDbContext(DbConnection existingConnection, bool contextOwnsConnection) : base(existingConnection, contextOwnsConnection)
-        {
         }
 
         public CodeGolfDbContext(string nameOrConnectionString) : base(nameOrConnectionString)
